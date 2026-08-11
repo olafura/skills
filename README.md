@@ -10,9 +10,18 @@ gates.
 
 ## Installing
 
+Install skills individually via the [skills.sh](https://www.skills.sh) CLI —
+pick the ones you need:
+
 ```bash
-npx skills add olafura/skills          # via the skills.sh CLI
+npx skills add https://github.com/olafura/skills --skill make-it-right
+npx skills add https://github.com/olafura/skills --skill harden
+npx skills add https://github.com/olafura/skills --skill maintain
 ```
+
+The skills reference each other (e.g. `maintain` triages security alerts per
+`harden`'s rules, and `harden` follows `make-it-right`), so installing the
+whole group together works best — but each one runs standalone.
 
 Or wire them in manually — copy or symlink a skill directory into your
 agent's skill location (e.g. `.claude/skills/` for Claude Code, or your
@@ -23,7 +32,7 @@ harness's equivalent). Each skill ships its subagent role playbooks in a
 
 > **Make it Work → Make it Right → Make it Fast & Secure → Keep it Working**
 
-📺 **The video behind this group:** _[link coming soon]_
+https://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast
 
 **The idea:** AI assistants make Phase 1 — getting something working — nearly
 free, which makes it dangerously easy to stop there. Code that only ever
