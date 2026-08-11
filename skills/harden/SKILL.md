@@ -16,15 +16,18 @@ yourself, sequentially. The stages and gates below stay identical either way.
 0. **Find the gates.** Locate the project's check gate (canonical lint +
    typecheck + test command — see the repo's agent/contributor docs and
    task-runner config) and its security-scan command if one exists. If there
-   is no security-scan command, pick the standard scanners for the ecosystem —
-   a static analyzer plus a dependency-vulnerability auditor (e.g.
+   is no runnable check gate, stop and report — never harden without a gate. If
+   there is no security-scan command, pick the standard scanners for the
+   ecosystem — a static analyzer plus a dependency-vulnerability auditor (e.g.
    bandit + pip-audit, npm/pnpm audit + semgrep, cargo-audit, govulncheck,
    brakeman — whatever fits the stack) — run them via ephemeral/pinned
    invocations, and note in the report that the project should adopt a
    permanent scan task.
 
-1. **Mechanical scan.** Run the scanners and collect every finding (a nonzero
-   exit with findings is expected, not an error). Scope note: if this skill's
+1. **Baseline and mechanical scan.** Run the check gate before making any
+   edits. If it is red, stop and report the failure — never harden on a broken
+   baseline. Then run the scanners and collect every finding (a nonzero exit
+   with findings is expected, not an error). Scope note: if this skill's
    arguments name files/areas, still run the full scan but prioritize findings
    in scope.
 
@@ -76,11 +79,20 @@ yourself, sequentially. The stages and gates below stay identical either way.
    evidence-backed proposals, no edits. Apply serially behind the check gate
    (one `perf:` commit each), re-measure, and keep only changes whose number
    moved. Proposals the analyst flagged as behavior-risky get a
-   behavior-verifier pass (`roles/behavior-verifier.md`). No speculative
+   behavior-verifier pass (`roles/behavior-verifier.md`). A **changed** verdict
+   means revert that performance commit. For a **suspect** verdict, investigate
+   until it resolves to preserved-with-evidence; otherwise revert the commit.
+   Never retain an unresolved suspect optimization. No speculative
    optimization.
 
-7. **Report.** A findings table: finding → source (scanner / sweep / platform
+7. **Verify the final tree.** After all platform-alert and performance work,
+   run the check gate and the full scanner set again against the final source
+   and dependency tree. Fix or revert any new non-deferred failure, then repeat
+   until the gate is green and scanners exit clean (or carry only findings
+   explicitly deferred in the report). Do not rely on results from step 4.
+
+8. **Report.** A findings table: finding → source (scanner / sweep / platform
    alert) → verdict (confirmed / refuted with reason) → resolution (fixed
    commit / suppressed with justification / deferred with owner-worthy
-   detail). Plus benchmark before/after numbers if the perf lane ran. Do not
-   push or merge.
+   detail). Include the final check-gate and scanner commands and results, plus
+   benchmark before/after numbers if the perf lane ran. Do not push or merge.
