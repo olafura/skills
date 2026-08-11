@@ -25,9 +25,11 @@ yourself, sequentially. The stages and gates below stay identical either way.
 
 1. **Scope and baseline.** Changed files: diff against the merge-base with the
    main branch (or the base/paths given as arguments to this skill). Drop
-   vendored, generated, and lockfile paths. Run the check gate. If red, stop
-   and report — never refactor on a red baseline. If the diff is empty, stop
-   and say so.
+   vendored, generated, and lockfile paths. Require a clean worktree, including
+   the index and untracked files. If it is dirty, stop and ask the user to
+   commit or stash their work; never stash, discard, or overwrite it yourself.
+   Run the check gate. If red, stop and report — never refactor on a red
+   baseline. If the diff is empty, stop and say so.
 
 2. **Scout (parallel, read-only).** Run 2 read-only scout subagents:
    - one hunting existing helpers, utilities, and types the changed code
@@ -54,8 +56,9 @@ yourself, sequentially. The stages and gates below stay identical either way.
    - run the check gate;
    - green → commit (`refactor: rename X to Y` / `refactor: extract X` /
      `refactor: move X to Y`) — one refactoring kind per commit;
-   - red → revert the working tree, retry a smaller version once, else skip
-     and record why.
+   - red → restore only the files or hunks changed by the current proposal
+     to its clean pre-proposal state; retry a smaller version once, else skip
+     and record why. Never revert the whole working tree.
    Never batch unrelated proposals into one commit.
 
 6. **Verify (parallel, adversarial).** Run 2 subagents with the
