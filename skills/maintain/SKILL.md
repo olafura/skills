@@ -61,7 +61,9 @@ yourself, sequentially. The stages and gates below stay identical either way.
    behavior-verifier role (`roles/behavior-verifier.md`) over the full diff
    to hunt for behavior drift from upgraded deps (changed defaults,
    deprecations newly triggered at load time). Any **changed** verdict:
-   revert that upgrade and defer it.
+   revert that upgrade and defer it. For a **suspect** verdict, investigate
+   until it resolves to preserved-with-evidence; otherwise revert and defer the
+   upgrade. Never ship an unresolved suspect dependency change.
 
 6. **Report** (this is the PR body on scheduled runs): per category — what was
    applied (commits), what was deferred and why (with the exact command a
