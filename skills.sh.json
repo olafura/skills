@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Phased Delivery",
+      "description": "Make it Work → Make it Right → Make it Fast & Secure → Keep it Working. Agent-orchestrated passes for the lifecycle phases AI-assisted coding tends to skip: subagents propose in parallel (read-only), changes apply serially behind the project's check gate, and adversarial verifiers attack the result before success is reported.",
+      "skills": ["make-it-right", "harden", "maintain"]
+    }
+  ]
+}
