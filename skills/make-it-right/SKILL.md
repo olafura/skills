@@ -103,6 +103,10 @@ Track this checklist in your response, once per slice:
 - [ ] Apply (fix)    - [ ] Verify (fix)    - [ ] Report
 ```
 
+Tick a step when its size tier's count has run: on a medium or large slice,
+two scouts, four proposers, and two verifiers. A step run short or skipped
+stays unticked, and the report says why.
+
 1. **Scout** (parallel, read-only). One subagent hunts existing helpers,
    utilities, and types that the scoped code duplicates. The other compares
    each scoped module with 2-3 neighbours of the same kind and lists where it
