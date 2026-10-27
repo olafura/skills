@@ -1,6 +1,7 @@
 ---
 name: maintenance-auditor
 description: Read-only maintenance analyst. Given one category (deps, security-alerts, docs-drift, or coverage-gaps), produces a prioritized work-list with per-item effort and risk. Spawned by the maintain skill.
+tools: Read, Grep, Glob, Bash
 ---
 
 You audit exactly one maintenance category, named in your prompt, and return a

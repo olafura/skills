@@ -1,75 +1,124 @@
 ---
 name: make-it-right
-description: Phase 2 refactoring pass over a branch's changes, orchestrated with subagents - scouts map the changed surface, refactor-proposer agents propose per dimension, changes apply serially behind the project's check gate, and behavior-verifier agents attack the result. Use when a feature works but hasn't had a cleanup pass, or when asked to "make it right", clean up, or refactor a branch. Never changes behavior.
+description: Behavior-preserving cleanup of working code - naming, duplication, structure and coupling, idioms and concurrency - over a branch, a PR, paths, or the whole codebase. Review mode returns ranked findings without editing, so it fits code review; fix mode applies them as gated refactor commits, then verifiers try to prove behavior changed. Use when asked to make it right, clean up, refactor, or tidy code, to review a diff for code quality, or once a feature works and before it merges.
 ---
 
-Orchestrate a behavior-preserving cleanup of this branch. Subagents propose in
-parallel (read-only); you apply serially, one concern per commit, with the
-project's check gate after every commit; adversarial verifiers attack the
-result before you report success.
+Same behavior, better code. Subagents propose (read-only), you synthesize and
+apply serially behind a **ratchet** gate, and adversarial verifiers try to
+prove behavior changed before you report success.
 
-Harness note: role playbooks live in `roles/` next to this file. If your
-harness supports named subagents, register the roles and spawn them by name in
-parallel. If it supports plain subagents, paste each role playbook into the
-subagent's instructions. If it has no subagents at all, perform each role
-yourself, sequentially. The stages and gates below stay identical either way.
+If `PROJECT.md` sits next to this file, read it first. Its gates, exclusions,
+and conventions override the defaults here.
 
-0. **Find the check gate.** The gate is the project's canonical verification
-   command — ideally one verb covering lint + typecheck + tests. Look for it in
-   the repo's agent/contributor docs (AGENTS.md, CLAUDE.md, CONTRIBUTING,
-   README) and task-runner config (Makefile, justfile, mise.toml, package.json
-   scripts, or the ecosystem's equivalent). If no single command exists,
-   compose one from the individual lint/typecheck/test commands and use that
-   composition consistently. If nothing runnable exists, stop and report —
-   never refactor without a gate.
+Roles live in `roles/` next to this file. With named subagents, register and
+spawn them by name; with plain subagents, paste the role into the prompt;
+with none, perform each role yourself in order. The steps stay the same.
 
-1. **Scope and baseline.** Changed files: diff against the merge-base with the
-   main branch (or the base/paths given as arguments to this skill). Drop
-   vendored, generated, and lockfile paths. Require a clean worktree, including
-   the index and untracked files. If it is dirty, stop and ask the user to
-   commit or stash their work; never stash, discard, or overwrite it yourself.
-   Run the check gate. If red, stop and report — never refactor on a red
-   baseline. If the diff is empty, stop and say so.
+## 1. Frame the run
 
-2. **Scout (parallel, read-only).** Run 2 read-only scout subagents:
-   - one hunting existing helpers, utilities, and types the changed code
-     should have reused (search sibling modules and shared/library code);
-   - one mapping conventions the changed code deviates from (compare with 2-3
-     neighboring modules of the same kind).
+Decide these from the request and the repo, state them at the top of your
+report, and ask only when the request is genuinely ambiguous:
 
-3. **Propose (parallel, read-only).** Run 4 subagents with the
-   refactor-proposer role (`roles/refactor-proposer.md`), one per dimension:
-   `naming`, `duplication`, `structure-coupling`, `idioms-and-concurrency`.
-   Give each the changed-file list, the branch goal (from recent commit
-   messages), and the relevant scout findings. Each returns ranked proposals
-   with file:line anchors — no edits.
+- **Mode.** `review` returns findings and touches nothing: no edits, staging,
+  or commits. Use it for code review, someone else's branch or PR, or "what
+  would you clean up?". `fix` edits and commits. Use it when asked to clean
+  up, refactor, or make right the current working branch.
+- **Scope.** Arguments win: a PR or branch means its diff against its base,
+  paths mean those files, and `all` means the whole repository. Otherwise use
+  the current branch's diff against its merge-base with the main branch. If
+  that diff is empty, say so and offer a path or `all`. Drop vendored,
+  generated, and lockfile paths.
+- **Size.** For *small* scopes (about ten files or fewer), cover all four
+  dimensions yourself or with one proposer, and use one verifier. *Medium*
+  scopes use the full fan-out below. *Large* scopes and `all` split into
+  slices (section 4).
 
-4. **Synthesize.** Merge the proposal lists. Drop anything that would change
-   observable behavior, public API, route paths, serialized field names, or
-   test assertions; drop new dependencies; drop "wrong abstraction" dedupes
-   (instances that only look similar). Where proposals conflict, prefer the
-   smaller change. Order the survivors: renames → dedupes → moves/splits —
-   renames first so extracted helpers get good names.
+## 2. Gate and baseline
 
-5. **Apply serially.** For each surviving proposal:
-   - make the edit(s), updating every reference (search, don't trust memory);
-   - run the check gate;
-   - green → commit (`refactor: rename X to Y` / `refactor: extract X` /
-     `refactor: move X to Y`) — one refactoring kind per commit;
-   - red → restore only the files or hunks changed by the current proposal
-     to its clean pre-proposal state; retry a smaller version once, else skip
-     and record why. Never revert the whole working tree.
-   Never batch unrelated proposals into one commit.
+The gate is a **ratchet**: a commit may not add a failure. It need not fix
+failures that were already there.
 
-6. **Verify (parallel, adversarial).** Run 2 subagents with the
-   behavior-verifier role (`roles/behavior-verifier.md`) over the new commit
-   range, telling each to attack it independently. Any **changed** verdict:
-   fix or revert that commit, re-run the check gate, and re-verify. A
-   **suspect** verdict: investigate yourself; resolve to
-   preserved-with-evidence or revert.
+- Find the commands in the repo's agent docs (AGENTS.md, CLAUDE.md,
+  CONTRIBUTING) and task-runner config. Use two tiers. The **targeted gate**
+  is lint, typecheck, and the tests covering touched files and their callers,
+  run after each change. The **full gate** is the project's check command, run
+  once before the first edit and once at the end. If the docs map change
+  types to checks, follow that map.
+- Before the first edit, record the baseline: run the full gate and list
+  failing checks or tests by name. A red baseline is recorded, not a stop.
+  From then on, green means no failure outside the baseline list. If the
+  gate cannot produce a signal at all (missing tool, broken install,
+  collection error), or nothing runnable exists, fix mode becomes review mode
+  and the report says why.
+- Review mode needs no baseline. Run targeted tests only when a finding
+  depends on runtime behavior.
+- Pre-existing uncommitted changes belong to the user. Leave them exactly as
+  they are. Prefer a separate worktree or branch for the pass. Otherwise,
+  skip proposals that touch dirty files and list them in the report, and
+  stage your own edits by path.
 
-7. **Report.** Final message must include: commits made (hash + subject),
-   proposals rejected in synthesis and why, proposals skipped during apply and
-   why, verifier verdicts, and anything needing human judgment (public API
-   changes, cross-package moves, suspicious-but-unproven behavior
-   differences). Do not push or merge — leave the branch for review.
+## 3. The pass
+
+Track this checklist in your response:
+
+```
+- [ ] Scout    - [ ] Propose    - [ ] Synthesize
+- [ ] Apply (fix)    - [ ] Verify (fix)    - [ ] Report
+```
+
+1. **Scout** (parallel, read-only). One subagent hunts existing helpers,
+   utilities, and types that the scoped code duplicates. The other compares
+   each scoped module with 2-3 neighbours of the same kind and lists where it
+   deviates from their conventions. Done when every scoped module has its
+   neighbours named, plus each duplicated helper or "none found".
+2. **Propose** (parallel, read-only). Spawn one `refactor-proposer` per
+   dimension: `naming`, `duplication`, `structure-coupling`,
+   `idioms-and-concurrency`. Give each the file list, the goal of the change
+   (from commit messages or the PR description), the scout findings, and the
+   project notes.
+3. **Synthesize.** Merge and dedupe across dimensions. Reject anything that
+   would change observable behavior, public API, route paths, serialized field
+   names, or test assertions. Also reject new dependencies and dedupes of code
+   that only looks alike. When proposals conflict, keep the smaller change.
+   Order the rest: renames, then dedupes, then moves and splits, so extracted
+   helpers get good names. Done when every proposal is accepted or rejected
+   with a reason. **Review mode ends here:** report the accepted list as
+   findings, each with file:line, the concrete change, and its risk.
+4. **Apply** (fix mode, serially). For each accepted proposal:
+   - make the edit and update every reference by search, including strings,
+     docs, scripts, and dynamic dispatch the type checker cannot see;
+   - run the targeted gate;
+   - when it is green, commit one refactoring kind (`refactor: rename X to Y`,
+     `refactor: extract X`, `refactor: move X to Y`);
+   - when it is red, restore only this proposal's files, retry a smaller
+     version once, or skip it and record why.
+5. **Verify** (fix mode). Run the full gate against the baseline. Then spawn
+   `behavior-verifier` on `<start>..HEAD` (two independent verifiers for
+   medium and large scopes). On a **changed** verdict, fix or revert that
+   commit and verify again. On a **suspect** verdict, resolve it to preserved
+   with evidence, or revert. Done when every commit is preserved with
+   evidence.
+6. **Report.** Include the mode, scope, and baseline; commits (hash and
+   subject) or findings; proposals rejected or skipped and why; verifier
+   verdicts; and what needs human judgment, such as public API changes,
+   cross-package moves, or unproven behavior differences. Leave pushing and
+   merging to the user.
+
+## 4. Slices (large scopes and `all`)
+
+Split the scope into slices of disjoint files along module or package
+boundaries, each about the size of one reviewable PR. Rank them by
+**hotspot**: churn (commits in the last few months) times size. Each slice
+is its own pass through section 3, with its own report and branch. Slices
+run in parallel only in separate worktrees; in a shared worktree they run
+serially. Duplication that spans slices goes into a final cross-slice pass
+once the slices land.
+
+When the harness lets you choose models, match the model to the job:
+
+- **fast and cheap:** scouts, `naming`, and bulk mechanical edits such as
+  wide renames or reference sweeps;
+- **balanced:** `duplication` and `idioms-and-concurrency` proposers, and
+  applying straightforward proposals;
+- **strongest:** `structure-coupling`, synthesis, `behavior-verifier`, and
+  anything touching concurrency or a public surface.

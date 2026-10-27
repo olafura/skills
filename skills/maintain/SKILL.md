@@ -1,72 +1,90 @@
 ---
 name: maintain
-description: Phase 4 maintenance pass - fans out maintenance-auditor agents across dependencies, security alerts, docs drift, and coverage gaps, then applies the merged work-list serially behind the project's check gate. Use on a regular cadence (weekly), when asked to do repo maintenance, update dependencies, or sync docs. The final report doubles as a PR body for scheduled runs.
+description: Maintenance sweep - maintenance-auditor agents audit dependencies, security alerts, docs drift, and coverage gaps, then low-risk items are applied as gated per-category commits and risky ones deferred to a human report. Report mode audits without editing. Use on a regular cadence, for scheduled or headless runs, or when asked to do repo maintenance, update dependencies, triage alerts, sync docs, or fill coverage gaps. The report doubles as a PR body.
 ---
 
-Orchestrate a maintenance pass. Auditor subagents produce work-lists in
-parallel (read-only); you apply serially with per-category commits behind the
-project's check gate; risky items are deferred to the human report, never
-applied silently.
+Audit in parallel, apply serially, defer anything risky. Auditor subagents
+produce work-lists (read-only); you apply per-category commits behind a
+**ratchet** gate. Deferred items go to the human report with the command a
+human would run.
 
-Harness note: role playbooks live in `roles/` next to this file. If your
-harness supports named subagents, register the roles and spawn them by name in
-parallel. If it supports plain subagents, paste each role playbook into the
-subagent's instructions. If it has no subagents at all, perform each role
-yourself, sequentially. The stages and gates below stay identical either way.
+If `PROJECT.md` sits next to this file, read it first. Its automation,
+gates, and pins override the defaults here.
 
-0. **Find the gates.** Locate the project's check gate (canonical lint +
-   typecheck + test command) and its stricter pre-merge gate if one exists —
-   see the repo's agent/contributor docs and task-runner config. Dependency
-   changes always use the strictest gate available.
+Roles live in `roles/` next to this file. With named subagents, register and
+spawn them by name; with plain subagents, paste the role into the prompt;
+with none, perform each role yourself in order. The steps stay the same.
 
-1. **Baseline.** Run the check gate. If red, stop — maintenance never starts
-   from a broken state; report the failure instead. Note the current branch;
-   if on the main branch, create `maintenance/<date>` first.
+## 1. Frame the run
 
-2. **Audit fan-out (parallel, read-only).** Run 4 subagents with the
-   maintenance-auditor role (`roles/maintenance-auditor.md`), one per
+State these at the top of the report:
+
+- **Mode.** `report` (also called dry run) audits and writes the report,
+  touching nothing. `fix` applies and commits. Headless and scheduled runs
+  take the mode from their caller.
+- **Categories.** All four by default (`deps`, `security-alerts`,
+  `docs-drift`, `coverage-gaps`), or the ones named in the arguments.
+- **Branch.** On the main branch, fix mode first creates
+  `maintenance/<date>`.
+- **Gates.** The check gate and the strictest pre-merge gate come from the
+  repo's agent docs and task-runner config. Dependency changes always use the
+  strictest gate.
+
+## 2. Baseline
+
+The gate is a **ratchet**: an applied item may not add a failure. Before the
+first edit, run the check gate and record failing checks or tests by name. A
+red baseline is recorded, not a stop: fixing it may itself be a work item.
+If the gate cannot produce a signal at all, fix mode becomes report mode and
+the report says why. Pre-existing uncommitted changes belong to the user;
+leave them exactly as they are and skip items that touch dirty files.
+
+## 3. The pass
+
+```
+- [ ] Audit   - [ ] Plan   - [ ] Apply (fix)   - [ ] Verify (fix)   - [ ] Report
+```
+
+1. **Audit** (parallel, read-only). Spawn one `maintenance-auditor` per
    category:
-   - `deps`: outdated dependencies and stale tool/scanner pins — minus
-     whatever the repo's existing update automation (Renovate, Dependabot, a
-     custom workflow) already owns;
-   - `security-alerts`: open alerts on the repo host (skips cleanly if the
-     host CLI is unauthenticated);
-   - `docs-drift`: agent/contributor docs and docs/ vs the actual commands,
-     module layout, and endpoints;
-   - `coverage-gaps`: the test-coverage report, business-critical modules
-     only.
-   Each returns a prioritized work-list with effort and risk per item.
+   - `deps`: outdated dependencies and stale tool or scanner pins, minus what
+     the repo's update automation (Renovate, Dependabot, a custom workflow)
+     already owns;
+   - `security-alerts`: open alerts on the repo host, skipped with a note when
+     the host CLI is unauthenticated;
+   - `docs-drift`: agent and contributor docs and `docs/` against the actual
+     commands, module layout, and endpoints;
+   - `coverage-gaps`: the coverage report, business-critical code only.
+2. **Plan.** Merge the work-lists. Apply now: low or medium risk with small
+   or medium effort. Defer: major version bumps, pins that carry an
+   explanatory comment, anything touching public API or infrastructure, and
+   large items. When in doubt, defer. Done when every item is apply-now or
+   deferred with a reason. **Report mode skips to step 5.**
+3. **Apply** (fix mode, serially, per category):
+   - **deps**: leave routine bumps to the repo's automation. Apply only the
+     targeted items it can't handle, such as a security-motivated bump of one
+     package or a stale scanner pin. Read the lockfile diff for surprises,
+     run the strictest gate, and commit `chore(deps): ...`.
+   - **security-alerts**: refute first and fix High first, per the harden
+     skill; commit `fix(security): ...`.
+   - **docs-drift**: correct the stale side. That is usually the docs; when the
+     code is the odd one out, report it instead. Commit `docs: ...`.
+   - **coverage-gaps**: add tests for the chosen branches in the existing test
+     files and fixtures. Run the new tests directly, then the gate, and commit
+     `test: ...`.
+   A category with nothing applicable is a fine result; say so.
+4. **Verify** (fix mode). If any lockfile change shipped, spawn
+   `behavior-verifier` on the full diff to hunt for drift from upgraded
+   dependencies: changed defaults, and deprecations newly triggered at load
+   time. Revert and defer the upgrade on **changed**, and on any **suspect**
+   you cannot resolve to preserved with evidence. Then run the full gate
+   against the baseline.
+5. **Report** (the PR body for scheduled runs). Per category: what was
+   applied (commits), what was deferred and why with the exact command a
+   human would run, and auditor findings that need discussion. End with the
+   gate command and result. Leave pushing and merging to the user unless the
+   caller says otherwise; on a `maintenance/*` branch, offer the PR command.
 
-3. **Plan.** Merge the work-lists. Apply-now = low/medium risk, small/medium
-   effort. Defer-to-report = major version bumps, pinned tools with an
-   explanatory comment, anything touching public API or infrastructure,
-   large-effort items. When in doubt, defer.
-
-4. **Apply serially, per category:**
-   - **deps**: leave routine bumps to the repo's automation if it has any;
-     apply only targeted items it can't handle (a security-motivated bump of
-     one package, stale scanner pins the auditor flagged). Review the
-     lockfile diff for surprises, gate with the strictest check available,
-     commit `chore(deps): ...`.
-   - **security-alerts**: fix per the harden skill's rules (refute first,
-     High first), commit `fix(security): ...`.
-   - **docs-drift**: correct the stale side (usually docs; if the code is the
-     odd one out, report it instead), commit `docs: ...`.
-   - **coverage-gaps**: add tests for the chosen uncovered branches, extend
-     existing test files/fixtures, run the new tests directly first, then the
-     check gate, commit `test: ...`.
-   A category with nothing applicable is fine — say so in the report.
-
-5. **Verify.** If any lockfile change shipped, run one subagent with the
-   behavior-verifier role (`roles/behavior-verifier.md`) over the full diff
-   to hunt for behavior drift from upgraded deps (changed defaults,
-   deprecations newly triggered at load time). Any **changed** verdict:
-   revert that upgrade and defer it. For a **suspect** verdict, investigate
-   until it resolves to preserved-with-evidence; otherwise revert and defer the
-   upgrade. Never ship an unresolved suspect dependency change.
-
-6. **Report** (this is the PR body on scheduled runs): per category — what was
-   applied (commits), what was deferred and why (with the exact command a
-   human would run), and auditor findings that need discussion. End with the
-   gate status. Do not push or merge unless asked; on a `maintenance/*`
-   branch, offer the PR command instead.
+When the harness lets you choose models: `deps` and `docs-drift` auditors on
+the fast and cheap tier; `security-alerts` and `coverage-gaps` on the
+balanced tier; `behavior-verifier` on the strongest.

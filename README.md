@@ -48,12 +48,34 @@ All three share one orchestration invariant:
 1. **Subagents propose** — specialists fan out in parallel, read-only, each
    owning one dimension or attack surface, and return ranked proposals with
    file:line anchors. They never edit.
-2. **The orchestrator applies** — serially, one concern per commit, running
-   the project's check gate (lint + typecheck + tests) after every commit.
-   Red gate → revert, retry smaller, or skip.
+2. **The orchestrator applies** — serially, one concern per commit, behind a
+   **ratchet** gate: a targeted check (lint, typecheck, the tests covering
+   what changed) after each commit, the full check gate at the start and the
+   end. A commit may not add a failure; it need not fix ones already there.
+   Red → revert that change, retry smaller, or skip.
 3. **Adversaries verify** — before success is reported, independent verifier
    agents attack the result (trying to *prove* behavior changed, or to
    *refute* a security finding). Nothing ships on the proposing agent's word.
+
+### Modes, scope, and size
+
+Every skill has a read-only mode — `review` for make-it-right and harden,
+`report` for maintain — that stops after the propose/refute stage and returns
+findings, so the same skill works inside a code review, on someone else's
+PR, or as a dry run. Fix mode applies and commits.
+
+Scope is the current branch by default, or whatever the arguments name: a PR,
+a branch, paths, or `all`. Fan-out scales with it: a small diff gets one
+proposer and one verifier, a large scope splits into hotspot-ranked
+**slices** that each get their own pass (in parallel when each has its own
+worktree). When the harness lets you pick models, each skill says which jobs
+go to the fast, balanced, and strongest tiers.
+
+The skills record what they find instead of refusing to start. A red
+baseline is written down and becomes the ratchet's floor; someone else's
+uncommitted changes are left alone and the proposals touching them skipped;
+an empty diff gets an offer of a wider scope. Only a gate that cannot
+produce any signal at all drops fix mode to the read-only mode.
 
 Phase 1 needs no skill — that's the part agents already do well. The gate for
 Phase 1 is simply: the feature demonstrably works and the project's check
@@ -61,19 +83,20 @@ command is green.
 
 | Phase | Skill | One-liner |
 |---|---|---|
-| 2 — Make it Right | [`make-it-right`](skills/make-it-right/SKILL.md) | Behavior-preserving cleanup of a working branch |
+| 2 — Make it Right | [`make-it-right`](skills/make-it-right/SKILL.md) | Behavior-preserving cleanup or review of a branch, PR, paths, or the whole codebase |
 | 3 — Make it Fast & Secure | [`harden`](skills/harden/SKILL.md) | Adversarial security pass; performance only where measured |
 | 4 — Keep it Working | [`maintain`](skills/maintain/SKILL.md) | Recurring deps / alerts / docs / coverage sweep |
 
 ### `make-it-right` — same behavior, better code
 
-Run on a feature branch once it works. Two scouts map what the change touched
+Run on a feature branch once it works, inside a code review (review mode),
+or across a whole codebase in slices. Two scouts map what the change touched
 and what existing code it should have reused; four **refactor-proposer**
 agents each own one dimension — naming, duplication (rule of three, and Sandi
 Metz's *"duplication is far cheaper than the wrong abstraction"*),
 structure/coupling, and language idioms & concurrency. The orchestrator
 synthesizes (dropping anything behavior-risky), applies renames → dedupes →
-moves as separate gated commits, and two **behavior-verifier** agents then
+moves as separate gated commits, and **behavior-verifier** agents then
 try to prove behavior changed — any confirmed change is fixed or reverted
 before the pass reports success. Hard rules: never change observable
 behavior, public API, or test assertions; no new dependencies; revert rather
@@ -133,11 +156,22 @@ place.
 
 Only one thing: a **check gate** — a canonical command covering lint,
 typecheck, and tests (`make check`, `mise run check`, `npm run check`,
-`just check`, …). Each skill's step 0 discovers it from your repo's docs and
-task-runner config, composes one from the individual commands if no single
-verb exists, and refuses to run ungated if there's nothing at all. Documenting
-the gate in your repo's agent instructions (AGENTS.md / CLAUDE.md) makes
-every pass faster and more reliable.
+`just check`, …). Each skill discovers it from your repo's docs and
+task-runner config and composes one from the individual commands if no single
+verb exists. Documenting the gate in your repo's agent instructions
+(AGENTS.md / CLAUDE.md), ideally with which checks cover which kind of change,
+makes every pass faster and more reliable.
+
+### Project notes
+
+Drop a `PROJECT.md` next to an installed skill's `SKILL.md` to give it what
+it cannot cheaply discover: the exact targeted and full gate commands,
+generated paths to skip, the trust model and attack surfaces, which update
+automation owns routine bumps, and conventions that look like cleanup
+targets but are deliberate. Each skill reads it first and lets it override
+the defaults, so the `SKILL.md` and roles can stay byte-identical to this
+repository and update cleanly. Keep it short; point at existing docs rather
+than restating them.
 
 ## Layout
 
@@ -145,6 +179,7 @@ every pass faster and more reliable.
 skills.sh.json                      groupings manifest for skills.sh
 skills/<name>/SKILL.md              the skill playbook (frontmatter: name + description)
 skills/<name>/roles/<role>.md       subagent playbooks the skill spawns
+skills/<name>/PROJECT.md            (yours, optional) project-specific gates and notes
 ```
 
 More groups will appear here over time; `skills.sh.json` is where they get
