@@ -13,8 +13,10 @@ repository, and `PROJECT.md` next to this file if present. Their automation,
 gates, and pins override the defaults here.
 
 Roles live in `roles/` next to this file. With named subagents, register and
-spawn them by name; with plain subagents, paste the role into the prompt;
-with none, perform each role yourself in order. The steps stay the same.
+spawn them by name; with plain subagents, paste the role into the prompt; with
+none, perform each role yourself in order. The steps stay the same. A step that
+spawns subagents is done only when their results are in: wait for each one in
+the foreground, since a result that lands after your turn ends is lost.
 
 When the harness lets you pick a model per subagent, pick one on every
 spawn: `deps` and `docs-drift` auditors on the fast and cheap tier;

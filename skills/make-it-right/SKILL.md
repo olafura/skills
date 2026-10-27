@@ -12,8 +12,10 @@ the repository, and `PROJECT.md` next to this file if present. Their gates,
 exclusions, and conventions override the defaults here.
 
 Roles live in `roles/` next to this file. With named subagents, register and
-spawn them by name; with plain subagents, paste the role into the prompt;
-with none, perform each role yourself in order. The steps stay the same.
+spawn them by name; with plain subagents, paste the role into the prompt; with
+none, perform each role yourself in order. The steps stay the same. A step that
+spawns subagents is done only when their results are in: wait for each one in
+the foreground, since a result that lands after your turn ends is lost.
 
 When the harness lets you pick a model per subagent, pick one on every
 spawn, at every scope size:
@@ -111,20 +113,21 @@ Track this checklist in your response, once per slice:
    would change observable behavior, public API, route paths, serialized field
    names, test expectations (a test's patch targets, imports, and the names it
    calls follow the code they name; what an assertion expects stays), or what
-   loads when (startup imports, bundle chunks). Also reject new dependencies,
-   dedupes of code that only looks alike, and proposals with no named payoff.
-   Put a shared helper in the lower-level module, so no low-level module starts
-   importing a higher layer, and in one whose own imports its callers already
-   load. A hazard fix that changes what fails, throws, or logs (a swallowed
-   error now caught, a race closed) is a behavior change: list it under human
-   judgment rather than applying it. When proposals conflict, keep the smaller
-   change unless the larger one subsumes it. Order the rest: renames, then
-   dedupes, then moves and splits, so extracted helpers get good names. Done
-   when every proposal is accepted or rejected with a reason. In fix mode, write
-   the accepted list with its file:line anchors to a scratch file outside the
-   repository and apply from that file, so the detail survives a long run.
-   **Review mode ends here:** report the accepted list as findings, each with
-   file:line, the concrete change, and its risk.
+   loads when (startup imports, bundle chunks), or how long a resource lives (a
+   client, pool, or lock now kept, shared, or closed elsewhere). Also reject new
+   dependencies, dedupes of code that only looks alike, and proposals with no
+   named payoff. Put a shared helper in the lower-level module, so no low-level
+   module starts importing a higher layer, and in one whose own imports its
+   callers already load. A hazard fix that changes what fails, throws, or logs
+   (a swallowed error now caught, a race closed) is a behavior change: list it
+   under human judgment rather than applying it. When proposals conflict, keep
+   the smaller change unless the larger one subsumes it. Order the rest:
+   renames, then dedupes, then moves and splits, so extracted helpers get good
+   names. Done when every proposal is accepted or rejected with a reason. In fix
+   mode, write the accepted list with its file:line anchors to a scratch file
+   outside the repository and apply from that file, so the detail survives a
+   long run. **Review mode ends here:** report the accepted list as findings,
+   each with file:line, the concrete change, and its risk.
 4. **Apply** (fix mode, serially). For each accepted proposal, finishing
    its commit before editing for the next:
    - make the edit and update every reference by search, including strings,
