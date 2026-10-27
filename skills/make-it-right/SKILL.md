@@ -125,7 +125,7 @@ Track this checklist in your response:
      when a search for the old name or path finds only intended hits;
    - run the targeted gate (small proposals on disjoint files may share one
      run, each still in its own commit);
-   - when it is green, commit one refactoring kind (`refactor: rename X to Y`,
+   - when it is green, commit that proposal alone (`refactor: rename X to Y`,
      `refactor: dedupe X into Y`, `refactor: extract X`,
      `refactor: move X to Y`);
    - when it is red, restore only this proposal's files, retry a smaller
@@ -151,8 +151,8 @@ boundaries, each about the size of one reviewable PR (a few hundred
 changed lines). A file too big for one slice is a slice of its own; split
 its work by section. Rank them by
 **hotspot**: churn (commits in the last few months) times size. Each slice
-is its own pass through section 3, with its own report and branch. Slices
-worked serially in one worktree may share one scout and propose round,
+is its own pass through section 3, with its own report and branch, sized
+as a medium scope. Slices worked serially in one worktree may share one scout and propose round,
 ordered by slice. Slices
 run in parallel only in separate worktrees; in a shared worktree they run
 serially. Duplication that spans slices goes into a final cross-slice pass
