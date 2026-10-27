@@ -41,7 +41,7 @@ report, and ask only when the request is genuinely ambiguous:
   that diff is empty, say so and offer a path or `all`. Drop vendored,
   generated, and lockfile paths.
 - **Size** counts the whole scope, not each package in it. For *small*
-  scopes (about ten files or fewer), scout yourself,
+  scopes (about ten files and two thousand lines or fewer), scout yourself,
   spawn one `refactor-proposer` for all four dimensions, and one
   `behavior-verifier`. *Medium* scopes (more than that, up to one
   reviewable PR) use the full fan-out below. *Large* scopes and `all` split
