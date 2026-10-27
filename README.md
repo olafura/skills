@@ -164,13 +164,17 @@ makes every pass faster and more reliable.
 
 ### Project notes
 
-Drop a `PROJECT.md` next to an installed skill's `SKILL.md` to give it what
-it cannot cheaply discover: the exact targeted and full gate commands,
+Commit `.agents/skills/<name>/PROJECT.md` to a repository (or drop a
+`PROJECT.md` next to an installed `SKILL.md`) to give the skill what it
+cannot cheaply discover: the exact targeted and full gate commands,
 generated paths to skip, the trust model and attack surfaces, which update
 automation owns routine bumps, and conventions that look like cleanup
 targets but are deliberate. Each skill reads it first and lets it override
 the defaults, so the `SKILL.md` and roles can stay byte-identical to this
-repository and update cleanly. Keep it short; point at existing docs rather
+repository and update cleanly. The repository path matters when the skill is
+also installed globally: agents such as Claude Code load a personal install
+in place of the project copy, and only the repository path still reaches
+the notes. Keep it short; point at existing docs rather
 than restating them.
 
 ## Layout

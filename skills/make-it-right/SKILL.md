@@ -7,8 +7,9 @@ Same behavior, better code. Subagents propose (read-only), you synthesize and
 apply serially behind a **ratchet** gate, and adversarial verifiers try to
 prove behavior changed before you report success.
 
-If `PROJECT.md` sits next to this file, read it first. Its gates, exclusions,
-and conventions override the defaults here.
+Read the project notes first: `.agents/skills/make-it-right/PROJECT.md` in
+the repository, and `PROJECT.md` next to this file if present. Their gates,
+exclusions, and conventions override the defaults here.
 
 Roles live in `roles/` next to this file. With named subagents, register and
 spawn them by name; with plain subagents, paste the role into the prompt;

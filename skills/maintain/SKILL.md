@@ -8,7 +8,8 @@ produce work-lists (read-only); you apply per-category commits behind a
 **ratchet** gate. Deferred items go to the human report with the command a
 human would run.
 
-If `PROJECT.md` sits next to this file, read it first. Its automation,
+Read the project notes first: `.agents/skills/maintain/PROJECT.md` in the
+repository, and `PROJECT.md` next to this file if present. Their automation,
 gates, and pins override the defaults here.
 
 Roles live in `roles/` next to this file. With named subagents, register and

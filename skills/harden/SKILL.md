@@ -7,8 +7,9 @@ Find, refute, then fix. Subagents find and refute in parallel (read-only);
 you fix serially behind a **ratchet** gate. A finding counts as fixed once
 the scanners and gate agree.
 
-If `PROJECT.md` sits next to this file, read it first. Its scanners, trust
-model, surfaces, and gates override the defaults here.
+Read the project notes first: `.agents/skills/harden/PROJECT.md` in the
+repository, and `PROJECT.md` next to this file if present. Their scanners,
+trust model, surfaces, and gates override the defaults here.
 
 Roles live in `roles/` next to this file. With named subagents, register and
 spawn them by name; with plain subagents, paste the role into the prompt;
