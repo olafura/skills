@@ -53,7 +53,8 @@ It need not clear unrelated ones.
   the background with its exit code written to a file, then poll for that
   file, and when a wait times out, wait again. Delete the file before each
   launch, so the poll never reads an earlier run's code. A run is finished
-  only when its exit code exists; continue or end your turn only after that.
+  only when its exit code exists (a notice that the background shell exited
+  is not that); continue or end your turn only after that.
 - Pre-existing uncommitted changes belong to the user. Leave them exactly as
   they are; prefer a separate worktree or branch, otherwise skip fixes that
   touch dirty files and stage your own edits by path.

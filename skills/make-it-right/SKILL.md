@@ -74,7 +74,8 @@ failures that were already there.
   background with its exit code written to a file, then poll for that file,
   and when a wait times out, wait again. Delete the file before each launch,
   so the poll never reads an earlier run's code. A run is finished only when
-  its exit code exists; continue or end your turn only after that.
+  its exit code exists (a notice that the background shell exited is not
+  that); continue or end your turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes (what `git status` shows) belong to the
@@ -130,8 +131,11 @@ Track this checklist in your response, once per slice:
    - when it is green, commit that proposal alone (`refactor: rename X to Y`,
      `refactor: dedupe X into Y`, `refactor: extract X`,
      `refactor: move X to Y`);
-   - when it is red, restore only this proposal's files, retry a smaller
-     version once, or skip it and record why.
+   - when it is red, find which part failed (lint, types, or a test) before
+     reading test counts. Finish the change it points at (a line the rename
+     pushed past the length limit, a stale patch-target string), or restore
+     only this proposal's files and retry a smaller version once, or skip it
+     and record why.
 5. **Verify** (fix mode). Run the full gate against the baseline. Then spawn
    `behavior-verifier` on `<start>..HEAD` (two independent verifiers for
    medium and large scopes). On a **changed** verdict, fix or revert that
@@ -139,7 +143,9 @@ Track this checklist in your response, once per slice:
    with evidence, fix it, or revert it; revert when no measurement can
    settle it, such as a race under load. When verifiers disagree, measure
    the disputed fact (run it, build it, diff the output) rather than pick a
-   side. After any fix or revert, rerun the full gate.
+   side. A **preserved** verdict that names a defect in the refactor itself
+   (code it left orphaned, a comment it made false) still gets a fix commit
+   or a recorded reason. After any fix or revert, rerun the full gate.
    Done when every commit is preserved with evidence.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
