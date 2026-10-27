@@ -139,7 +139,8 @@ Track this checklist in your response:
 
 Split the scope into slices of disjoint files along module or package
 boundaries, each about the size of one reviewable PR (a few hundred
-changed lines). Rank them by
+changed lines). A file too big for one slice is a slice of its own; split
+its work by section. Rank them by
 **hotspot**: churn (commits in the last few months) times size. Each slice
 is its own pass through section 3, with its own report and branch. Slices
 run in parallel only in separate worktrees; in a shared worktree they run
