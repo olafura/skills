@@ -114,31 +114,33 @@ Track this checklist in your response, once per slice:
    would change observable behavior, public API, route paths, serialized field
    names, test expectations (a test's patch targets, imports, and the names it
    calls follow the code they name; what an assertion expects stays), or what
-   loads when (startup imports, bundle chunks), or how long a resource lives (a
-   client, pool, or lock now kept, shared, or closed elsewhere). Also reject new
-   dependencies, dedupes of code that only looks alike, and proposals with no
-   named payoff. Put a shared helper in the lower-level module, so no low-level
-   module starts importing a higher layer, and in one whose own imports its
-   callers already load. A hazard fix that changes what fails, throws, or logs
-   (a swallowed error now caught, a race closed) is a behavior change: list it
-   under human judgment rather than applying it. When proposals conflict, keep
-   the smaller change unless the larger one subsumes it. Order the rest:
-   renames, then dedupes, then moves and splits, so extracted helpers get good
-   names. Done when every proposal is accepted or rejected with a reason. In fix
-   mode, write the accepted list with its file:line anchors to a scratch file
-   outside the repository and apply from that file, so the detail survives a
-   long run. **Review mode ends here:** report the accepted list as findings,
-   each with file:line, the concrete change, and its risk.
-4. **Apply** (fix mode, serially). For each accepted proposal, finishing
-   its commit before editing for the next:
+   loads when (a module newly loaded at startup, a bundle chunk split or
+   merged), or how long a resource lives (a client, pool, or lock now kept,
+   shared, or closed elsewhere). Also reject new dependencies, dedupes of code
+   that only looks alike, and proposals with no named payoff. Put a shared
+   helper in the lower-level module, so no low-level module starts importing a
+   higher layer, and in one whose own imports its callers already load. A hazard
+   fix that changes what fails, throws, or logs (a swallowed error now caught, a
+   race closed) is a behavior change: list it under human judgment rather than
+   applying it. When proposals conflict, keep the smaller change unless the
+   larger one subsumes it. Order the rest: renames, then dedupes, then moves and
+   splits, so extracted helpers get good names. Done when every proposal is
+   accepted or rejected with a reason. In fix mode, write the accepted list with
+   its file:line anchors to a scratch file outside the repository and apply from
+   that file, so the detail survives a long run. **Review mode ends here:**
+   report the accepted list as findings, each with file:line, the concrete
+   change, and its risk.
+4. **Apply** (fix mode, serially). Edit yourself or through one subagent at a
+   time; the commits stay yours. For each accepted proposal, finishing its
+   commit before editing for the next:
    - make the edit and update every reference by search, including strings,
      docs, scripts, and dynamic dispatch the type checker cannot see; done
      when a search for the old name or path finds only intended hits;
    - run the targeted gate on the uncommitted edit (small proposals on
      disjoint files may share one run, each still in its own commit);
-   - when it is green, commit that proposal alone (`refactor: rename X to Y`,
-     `refactor: dedupe X into Y`, `refactor: extract X`,
-     `refactor: move X to Y`);
+   - when it is green, commit that proposal alone, or with others of its kind in
+     the same file (`refactor: rename X to Y`, `refactor: dedupe X into Y`,
+     `refactor: extract X`, `refactor: move X to Y`);
    - when it is red, find which part failed (lint, types, or a test) before
      reading test counts. Finish the change it points at (a line the rename
      pushed past the length limit, a stale patch-target string), or restore this
