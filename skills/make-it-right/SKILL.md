@@ -43,13 +43,13 @@ report, and ask only when the request is genuinely ambiguous:
   the current branch's diff against its merge-base with the main branch. If
   that diff is empty, say so and offer a path or `all`. Drop vendored,
   generated, and lockfile paths.
-- **Size** counts the whole scope, not each package in it; a slice of a
-  large scope (section 4) is sized on its own files. For *small*
-  scopes (about ten files and two thousand lines or fewer), scout yourself,
-  spawn one `refactor-proposer` for all four dimensions, and one
-  `behavior-verifier`. *Medium* scopes (more than that, up to about one
-  package or five thousand lines) use the full fan-out below. *Large*
-  scopes and `all` split into slices (section 4).
+- **Size** counts the whole scope, not each package in it; a slice of a large
+  scope (section 4) is sized on its own files. For *small* scopes (about ten
+  files and two thousand lines at most; past either limit the scope is medium),
+  scout yourself, spawn one `refactor-proposer` for all four dimensions, and one
+  `behavior-verifier`. *Medium* scopes (more than that, up to about one package
+  or five thousand lines) use the full fan-out below. *Large* scopes and `all`
+  split into slices (section 4).
 
 ## 2. Gate and baseline
 
