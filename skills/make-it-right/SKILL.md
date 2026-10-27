@@ -40,7 +40,8 @@ report, and ask only when the request is genuinely ambiguous:
   the current branch's diff against its merge-base with the main branch. If
   that diff is empty, say so and offer a path or `all`. Drop vendored,
   generated, and lockfile paths.
-- **Size** counts the whole scope, not each package in it. For *small*
+- **Size** counts the whole scope, not each package in it; a slice of a
+  large scope (section 4) is sized on its own files. For *small*
   scopes (about ten files and two thousand lines or fewer), scout yourself,
   spawn one `refactor-proposer` for all four dimensions, and one
   `behavior-verifier`. *Medium* scopes (more than that, up to about one
@@ -154,8 +155,9 @@ boundaries, each about the size of one reviewable PR (a few hundred changed
 lines). A file too big for one slice is a slice of its own; split its work by
 section. Rank them by **hotspot**: churn (commits in the last few months)
 times size. Each slice is its own pass through section 3, with its own report
-and branch, sized as a medium scope. Slices worked serially in one worktree
-may share one scout and propose round, ordered by slice. Slices run in
+and branch, and at most a medium scope; its own size sets its tier. Slices
+worked serially in one worktree may share one scout and propose round,
+ordered by slice. Slices run in
 parallel only in separate worktrees; in a shared worktree they run serially.
 Duplication that spans slices goes into a final cross-slice pass once the
 slices land. Slices cut from one commit share one baseline: record it once and
