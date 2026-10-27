@@ -42,8 +42,8 @@ report, and ask only when the request is genuinely ambiguous:
   generated, and lockfile paths.
 - **Size.** For *small* scopes (about ten files or fewer), scout yourself,
   spawn one `refactor-proposer` for all four dimensions, and one
-  `behavior-verifier`. *Medium*
-  scopes use the full fan-out below. *Large* scopes and `all` split into
+  `behavior-verifier`. *Medium* scopes (more than that, up to one
+  reviewable PR) use the full fan-out below, including two verifiers. *Large* scopes and `all` split into
   slices (section 4).
 
 ## 2. Gate and baseline
