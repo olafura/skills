@@ -107,24 +107,27 @@ Tick a step when its size tier's count has run: on a medium or large slice,
 two scouts, four proposers, and two verifiers. A step run short or skipped
 stays unticked, and the report says why.
 
-1. **Scout** (parallel, read-only). One subagent hunts existing helpers,
-   utilities, and types that the scoped code duplicates. The other compares
-   each scoped module with 2-3 neighbours of the same kind and lists where it
-   deviates from their conventions. Done when every scoped module has its
-   neighbours named, plus each duplicated helper or "none found".
+1. **Scout** (parallel, read-only; any read-only search agent will do). One
+   subagent hunts existing helpers, utilities, and types that the scoped code
+   duplicates. The other compares each scoped module with 2-3 neighbours of the
+   same kind and lists where it deviates from their conventions. Done when every
+   scoped module has its neighbours named, plus each duplicated helper or "none
+   found".
 2. **Propose** (parallel, read-only). Spawn one `refactor-proposer` per
    dimension (one for all four on a small scope): `naming`, `duplication`,
    `structure-coupling`, `idioms-and-concurrency`. Give each the file list,
    the goal of the change (from commit messages or the PR description), the
    scout findings, and the project notes.
-3. **Synthesize.** Merge and dedupe across dimensions. Reject anything that
-   would change observable behavior, public API, route paths, serialized field
-   names, test expectations (a test's patch targets, imports, and the names it
-   calls follow the code they name; what an assertion expects stays), or what
-   loads when (a module newly loaded at startup, a bundle chunk split or
-   merged), or how long a resource lives (a client, pool, or lock now kept,
-   shared, or closed elsewhere). Also reject new dependencies, dedupes of code
-   that only looks alike, and proposals with no named payoff. Put a shared
+3. **Synthesize.** Merge and dedupe across dimensions. Check each proposal's
+   claims of fact (dead code, no other callers, identical bodies) by search
+   before accepting it: a proposer's claim is a lead, not evidence. Reject
+   anything that would change observable behavior, public API, route paths,
+   serialized field names, test expectations (a test's patch targets, imports,
+   and the names it calls follow the code they name; what an assertion expects
+   stays), or what loads when (a module newly loaded at startup, a bundle chunk
+   split or merged), or how long a resource lives (a client, pool, or lock now
+   kept, shared, or closed elsewhere). Also reject new dependencies, dedupes of
+   code that only looks alike, and proposals with no named payoff. Put a shared
    helper in the lower-level module, so no low-level module starts importing a
    higher layer, and in one whose own imports its callers already load. A hazard
    fix that changes what fails, throws, or logs (a swallowed error now caught, a
