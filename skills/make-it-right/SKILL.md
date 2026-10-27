@@ -43,9 +43,9 @@ report, and ask only when the request is genuinely ambiguous:
 - **Size** counts the whole scope, not each package in it. For *small*
   scopes (about ten files and two thousand lines or fewer), scout yourself,
   spawn one `refactor-proposer` for all four dimensions, and one
-  `behavior-verifier`. *Medium* scopes (more than that, up to one
-  reviewable PR) use the full fan-out below. *Large* scopes and `all` split
-  into slices (section 4).
+  `behavior-verifier`. *Medium* scopes (more than that, up to about one
+  package or five thousand lines) use the full fan-out below. *Large*
+  scopes and `all` split into slices (section 4).
 
 ## 2. Gate and baseline
 
@@ -76,10 +76,10 @@ failures that were already there.
   its exit code exists; continue or end your turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
-- Pre-existing uncommitted changes belong to the user. Leave them exactly as
-  they are. Prefer a separate worktree or branch for the pass. Otherwise,
-  skip proposals that touch dirty files and list them in the report, and
-  stage your own edits by path.
+- Pre-existing uncommitted changes (what `git status` shows) belong to the
+  user. Leave them exactly as they are. Prefer a separate worktree or branch
+  for the pass. Otherwise, skip proposals that touch dirty files and list them
+  in the report, and stage your own edits by path.
 
 ## 3. The pass
 
@@ -96,14 +96,15 @@ Track this checklist in your response, once per slice:
    deviates from their conventions. Done when every scoped module has its
    neighbours named, plus each duplicated helper or "none found".
 2. **Propose** (parallel, read-only). Spawn one `refactor-proposer` per
-   dimension (one for all four on a small scope): `naming`,
-   `duplication`, `structure-coupling`, `idioms-and-concurrency`. Give each the file list, the goal of the change
-   (from commit messages or the PR description), the scout findings, and the
-   project notes.
+   dimension (one for all four on a small scope): `naming`, `duplication`,
+   `structure-coupling`, `idioms-and-concurrency`. Give each the file list,
+   the goal of the change (from commit messages or the PR description), the
+   scout findings, and the project notes.
 3. **Synthesize.** Merge and dedupe across dimensions. Reject anything that
    would change observable behavior, public API, route paths, serialized field
-   names, test assertions, or what loads when (startup imports, bundle
-   chunks). Also reject new dependencies, dedupes of code
+   names, test assertions (a test's patch target or import may follow the
+   code it names; an assertion may not), or what loads when (startup
+   imports, bundle chunks). Also reject new dependencies, dedupes of code
    that only looks alike, and proposals with no named payoff. Put a shared
    helper in the lower-level module, so no low-level module starts importing
    a higher layer, and in one whose own imports its callers already load. A
@@ -134,8 +135,10 @@ Track this checklist in your response, once per slice:
    `behavior-verifier` on `<start>..HEAD` (two independent verifiers for
    medium and large scopes). On a **changed** verdict, fix or revert that
    commit and verify again. On a **suspect** verdict, resolve it to preserved
-   with evidence, fix it, or revert it. When verifiers disagree, measure the
-   disputed fact (run it, build it, diff the output) rather than pick a side.
+   with evidence, fix it, or revert it; revert when no measurement can
+   settle it, such as a race under load. When verifiers disagree, measure
+   the disputed fact (run it, build it, diff the output) rather than pick a
+   side. After any fix or revert, rerun the full gate.
    Done when every commit is preserved with evidence.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
@@ -147,14 +150,13 @@ Track this checklist in your response, once per slice:
 ## 4. Slices (large scopes and `all`)
 
 Split the scope into slices of disjoint files along module or package
-boundaries, each about the size of one reviewable PR (a few hundred
-changed lines). A file too big for one slice is a slice of its own; split
-its work by section. Rank them by
-**hotspot**: churn (commits in the last few months) times size. Each slice
-is its own pass through section 3, with its own report and branch, sized
-as a medium scope. Slices worked serially in one worktree may share one scout and propose round,
-ordered by slice. Slices
-run in parallel only in separate worktrees; in a shared worktree they run
-serially. Duplication that spans slices goes into a final cross-slice pass
-once the slices land. Slices cut from one commit share one baseline:
-record it once and hand it to each slice.
+boundaries, each about the size of one reviewable PR (a few hundred changed
+lines). A file too big for one slice is a slice of its own; split its work by
+section. Rank them by **hotspot**: churn (commits in the last few months)
+times size. Each slice is its own pass through section 3, with its own report
+and branch, sized as a medium scope. Slices worked serially in one worktree
+may share one scout and propose round, ordered by slice. Slices run in
+parallel only in separate worktrees; in a shared worktree they run serially.
+Duplication that spans slices goes into a final cross-slice pass once the
+slices land. Slices cut from one commit share one baseline: record it once and
+hand it to each slice.
