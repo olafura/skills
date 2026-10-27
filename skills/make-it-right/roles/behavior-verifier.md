@@ -37,9 +37,11 @@ Attack each commit from these angles:
    lock scope, retry and timeout values, cache lifetime, and work moving
    between "during the request" and "in the background".
 
-For each commit return a verdict, **preserved**, **suspect**, or
-**changed**, with the strongest evidence you found: file:line, before and
-after, and the difference a caller or downstream system would observe.
-Preserved needs positive evidence. When you cannot rule a difference out,
-the verdict is suspect. Passing tests are not proof; say what they do not
-cover. Finish with a one-line overall verdict.
+For each commit return a verdict, **preserved**, **suspect**, or **changed**,
+with the strongest evidence you found: file:line, before and after, and the
+difference a caller or downstream system would observe. Preserved needs positive
+evidence. When reading cannot rule a difference out, measure before you settle:
+run the old and new code on the same inputs from a scratch script outside the
+repository and compare. The verdict is suspect only when neither settles it;
+then name the measurement that would. Passing tests are not proof; say what they
+do not cover. Finish with a one-line overall verdict.
