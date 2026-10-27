@@ -69,8 +69,9 @@ failures that were already there.
   exists, fix mode becomes review mode and the report says why.
 - Gate runs can outlast a single tool call. Run a long gate in the
   background with its exit code written to a file, then poll for that file,
-  and when a wait times out, wait again. A run is finished only when its
-  exit code exists; continue or end your turn only after that.
+  and when a wait times out, wait again. Delete the file before each launch,
+  so the poll never reads an earlier run's code. A run is finished only when
+  its exit code exists; continue or end your turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes belong to the user. Leave them exactly as
@@ -99,10 +100,12 @@ Track this checklist in your response:
    project notes.
 3. **Synthesize.** Merge and dedupe across dimensions. Reject anything that
    would change observable behavior, public API, route paths, serialized field
-   names, or test assertions. Also reject new dependencies, dedupes of code
+   names, test assertions, or what loads when (startup imports, bundle
+   chunks). Also reject new dependencies, dedupes of code
    that only looks alike, and proposals with no named payoff. Put a shared
    helper in the lower-level module, so no low-level module starts importing
-   a higher layer. A hazard fix that changes what fails, throws, or logs
+   a higher layer, and in one whose own imports its callers already load. A
+   hazard fix that changes what fails, throws, or logs
    (a swallowed error now caught, a race closed) is a behavior change: list
    it under human judgment rather than applying it. When proposals conflict,
    keep the smaller change unless the larger one subsumes it.
@@ -116,8 +119,10 @@ Track this checklist in your response:
 4. **Apply** (fix mode, serially). For each accepted proposal, finishing
    its commit before editing for the next:
    - make the edit and update every reference by search, including strings,
-     docs, scripts, and dynamic dispatch the type checker cannot see;
-   - run the targeted gate;
+     docs, scripts, and dynamic dispatch the type checker cannot see; done
+     when a search for the old name or path finds only intended hits;
+   - run the targeted gate (small proposals on disjoint files may share one
+     run, each still in its own commit);
    - when it is green, commit one refactoring kind (`refactor: rename X to Y`,
      `refactor: dedupe X into Y`, `refactor: extract X`,
      `refactor: move X to Y`);
@@ -127,8 +132,9 @@ Track this checklist in your response:
    `behavior-verifier` on `<start>..HEAD` (two independent verifiers for
    medium and large scopes). On a **changed** verdict, fix or revert that
    commit and verify again. On a **suspect** verdict, resolve it to preserved
-   with evidence, or revert. Done when every commit is preserved with
-   evidence.
+   with evidence, fix it, or revert it. When verifiers disagree, measure the
+   disputed fact (run it, build it, diff the output) rather than pick a side.
+   Done when every commit is preserved with evidence.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
    verdicts; and what needs human judgment, such as public API changes,
@@ -143,6 +149,8 @@ changed lines). A file too big for one slice is a slice of its own; split
 its work by section. Rank them by
 **hotspot**: churn (commits in the last few months) times size. Each slice
 is its own pass through section 3, with its own report and branch. Slices
+worked serially in one worktree may share one scout and propose round,
+ordered by slice. Slices
 run in parallel only in separate worktrees; in a shared worktree they run
 serially. Duplication that spans slices goes into a final cross-slice pass
 once the slices land. Slices cut from one commit share one baseline:
