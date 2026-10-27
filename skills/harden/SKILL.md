@@ -49,8 +49,10 @@ It need not clear unrelated ones.
   failing check. A red baseline is recorded, not a stop; if the gate cannot
   produce a signal at all, fix mode becomes review mode and the report says
   why.
-- Gate and scanner runs can outlast a single tool call. Wait for each run to
-  finish before you continue or end your turn.
+- Gate and scanner runs can outlast a single tool call. Run a long one in
+  the background with its exit code written to a file, then poll for that
+  file, and when a wait times out, wait again. A run is finished only when
+  its exit code exists; continue or end your turn only after that.
 - Pre-existing uncommitted changes belong to the user. Leave them exactly as
   they are; prefer a separate worktree or branch, otherwise skip fixes that
   touch dirty files and stage your own edits by path.

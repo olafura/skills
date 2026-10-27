@@ -66,8 +66,10 @@ failures that were already there.
   gate cannot produce a signal at all (missing tool, broken install,
   collection error), or nothing runnable exists, fix mode becomes review mode
   and the report says why.
-- Gate runs can outlast a single tool call. Wait for each run to finish
-  before you continue or end your turn.
+- Gate runs can outlast a single tool call. Run a long gate in the
+  background with its exit code written to a file, then poll for that file,
+  and when a wait times out, wait again. A run is finished only when its
+  exit code exists; continue or end your turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes belong to the user. Leave them exactly as
@@ -109,7 +111,8 @@ Track this checklist in your response:
      docs, scripts, and dynamic dispatch the type checker cannot see;
    - run the targeted gate;
    - when it is green, commit one refactoring kind (`refactor: rename X to Y`,
-     `refactor: extract X`, `refactor: move X to Y`);
+     `refactor: dedupe X into Y`, `refactor: extract X`,
+     `refactor: move X to Y`);
    - when it is red, restore only this proposal's files, retry a smaller
      version once, or skip it and record why.
 5. **Verify** (fix mode). Run the full gate against the baseline. Then spawn
@@ -127,7 +130,8 @@ Track this checklist in your response:
 ## 4. Slices (large scopes and `all`)
 
 Split the scope into slices of disjoint files along module or package
-boundaries, each about the size of one reviewable PR. Rank them by
+boundaries, each about the size of one reviewable PR (a few hundred
+changed lines). Rank them by
 **hotspot**: churn (commits in the last few months) times size. Each slice
 is its own pass through section 3, with its own report and branch. Slices
 run in parallel only in separate worktrees; in a shared worktree they run

@@ -43,8 +43,10 @@ first edit, run the check gate and record failing checks or tests by name.
 When the gate stops at its first failure, run its remaining parts separately
 so the baseline names every failing check. A red baseline is recorded, not
 a stop: fixing it may itself be a work item. Gate runs can outlast a single
-tool call; wait for each run to finish before you continue or end your
-turn.
+tool call: run a long one in the background with its exit code written to a
+file, then poll for that file, and when a wait times out, wait again. A run
+is finished only when its exit code exists; continue or end your turn only
+after that.
 If the gate cannot produce a signal at all, fix mode becomes report mode and
 the report says why. Pre-existing uncommitted changes belong to the user;
 leave them exactly as they are and skip items that touch dirty files.
