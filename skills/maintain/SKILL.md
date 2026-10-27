@@ -39,18 +39,19 @@ State these at the top of the report:
 ## 2. Baseline
 
 The gate is a **ratchet**: an applied item may not add a failure. Before the
-first edit, run the check gate and record failing checks or tests by name.
-When the gate stops at its first failure, run its remaining parts separately
-so the baseline names every failing check. A red baseline is recorded, not
-a stop: fixing it may itself be a work item. Gate runs can outlast a single
-tool call: run a long one in the background with its exit code written to a
-file, then poll for that file, and when a wait times out, wait again. Delete
-the file before each launch, so the poll never reads an earlier run's code.
-A run is finished only when its exit code exists (a notice that the background
-shell exited is not that); continue or end your turn only after that.
-If the gate cannot produce a signal at all, fix mode becomes report mode and
-the report says why. Pre-existing uncommitted changes belong to the user;
-leave them exactly as they are and skip items that touch dirty files.
+first edit, run the check gate and record failing checks or tests by name. When
+the gate stops at its first failure, run its remaining parts separately so the
+baseline names every failing check. A red baseline is recorded, not a stop:
+fixing it may itself be a work item. Gate runs can outlast a single tool call:
+run a long one in the background, in its own session (`setsid`) so a harness
+timeout cannot kill it, with its exit code written to a file, then poll for that
+file, and when a wait times out, wait again. Delete the file before each launch,
+so the poll never reads an earlier run's code. A run is finished only when its
+exit code exists (a notice that the background shell exited is not that);
+continue or end your turn only after that. If the gate cannot produce a signal
+at all, fix mode becomes report mode and the report says why. Pre-existing
+uncommitted changes belong to the user; leave them exactly as they are and skip
+items that touch dirty files.
 
 ## 3. The pass
 
