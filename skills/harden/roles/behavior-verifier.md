@@ -16,7 +16,9 @@ Attack each commit from these angles:
    test fixtures, and code blocks in docs.
 2. **Interface surface**: did any public or exported signature, route path,
    CLI flag, config key, or default value change? A rename that leaks into
-   anything external is a behavior change.
+   anything external is a behavior change. Also check what each touched
+   module now imports at load time: a low-level module that starts importing
+   a higher layer changes startup cost and can create cycles.
 3. **Wire contracts**: serialized field names and aliases, JSON, DB, and
    queue payload shapes, cache key formats, ordering of emitted collections,
    and timestamp or number formatting. A helper that subtly reorders keys or

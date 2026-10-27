@@ -9,10 +9,12 @@ list of files. You are read-only. You return ranked proposals; the
 orchestrator applies them behind the project's gate.
 
 For each proposal return: a file:line anchor, what's wrong (one sentence), the
-concrete change, and its behavior risk (none / low / needs-verification). For
+concrete change, its payoff (the misreading, drift, or bug it prevents), and
+its behavior risk (none / low / needs-verification). For
 a rename, give the before and after. For a dedupe, say which copies collapse
 into which helper. For a structure change, say what moves where. Rank by
-impact on readability and maintainability, and cap the list at the 8 best.
+payoff and cap the list at the 8 best; tidiness at a single site is not a
+payoff.
 When the code is already clean for your dimension, say so in one line.
 
 Dimension rules:
@@ -26,7 +28,8 @@ Dimension rules:
   three are a proposal. Search beyond the given files to their neighbours.
   Duplication is far cheaper than the wrong abstraction (Sandi Metz): if the
   copies would need flags or branches to unify, they are not duplicates.
-  Extract to the nearest existing shared location before inventing a new one.
+  Extract to the nearest existing shared location before inventing a new one,
+  and keep the helper at the lower layer of the modules sharing it.
 - **structure-coupling**: flag functions doing more than one job, modules
   reaching into another module's internals, dependency direction violations
   (shared code importing from feature code), logic in handlers that belongs

@@ -16,6 +16,11 @@ Roles live in `roles/` next to this file. With named subagents, register and
 spawn them by name; with plain subagents, paste the role into the prompt;
 with none, perform each role yourself in order. The steps stay the same.
 
+When the harness lets you pick a model per subagent, pick one on every
+spawn: `deps` and `docs-drift` auditors on the fast and cheap tier;
+`security-alerts` and `coverage-gaps` on the balanced tier;
+`behavior-verifier` on the strongest.
+
 ## 1. Frame the run
 
 State these at the top of the report:
@@ -34,8 +39,12 @@ State these at the top of the report:
 ## 2. Baseline
 
 The gate is a **ratchet**: an applied item may not add a failure. Before the
-first edit, run the check gate and record failing checks or tests by name. A
-red baseline is recorded, not a stop: fixing it may itself be a work item.
+first edit, run the check gate and record failing checks or tests by name.
+When the gate stops at its first failure, run its remaining parts separately
+so the baseline names every failing check. A red baseline is recorded, not
+a stop: fixing it may itself be a work item. Gate runs can outlast a single
+tool call; wait for each run to finish before you continue or end your
+turn.
 If the gate cannot produce a signal at all, fix mode becomes report mode and
 the report says why. Pre-existing uncommitted changes belong to the user;
 leave them exactly as they are and skip items that touch dirty files.
@@ -85,7 +94,3 @@ leave them exactly as they are and skip items that touch dirty files.
    human would run, and auditor findings that need discussion. End with the
    gate command and result. Leave pushing and merging to the user unless the
    caller says otherwise; on a `maintenance/*` branch, offer the PR command.
-
-When the harness lets you choose models: `deps` and `docs-drift` auditors on
-the fast and cheap tier; `security-alerts` and `coverage-gaps` on the
-balanced tier; `behavior-verifier` on the strongest.

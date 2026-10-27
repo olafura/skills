@@ -15,6 +15,10 @@ Roles live in `roles/` next to this file. With named subagents, register and
 spawn them by name; with plain subagents, paste the role into the prompt;
 with none, perform each role yourself in order. The steps stay the same.
 
+When the harness lets you pick a model per subagent, pick one on every
+spawn: scanner triage on the fast and cheap tier; refuters on the balanced
+tier; adversaries, the performance analyst, and verifiers on the strongest.
+
 ## 1. Frame the run
 
 State these at the top of your report, and ask only when the request is
@@ -40,9 +44,13 @@ It need not clear unrelated ones.
 
 - Before the first edit, run the check gate and the scanners and record
   failing tests and every scanner finding. Scanners exiting nonzero on
-  findings is the expected result. A red baseline is recorded, not a stop;
-  if the gate cannot produce a signal at all, fix mode becomes review mode
-  and the report says why.
+  findings is the expected result. When the gate stops at its first
+  failure, run its remaining parts separately so the baseline names every
+  failing check. A red baseline is recorded, not a stop; if the gate cannot
+  produce a signal at all, fix mode becomes review mode and the report says
+  why.
+- Gate and scanner runs can outlast a single tool call. Wait for each run to
+  finish before you continue or end your turn.
 - Pre-existing uncommitted changes belong to the user. Leave them exactly as
   they are; prefer a separate worktree or branch, otherwise skip fixes that
   touch dirty files and stage your own edits by path.
@@ -104,7 +112,3 @@ It need not clear unrelated ones.
    the gate and scanner commands with their before and after results, and
    benchmark numbers if the perf lane ran. Leave pushing and merging to the
    user.
-
-When the harness lets you choose models: scanner triage on the fast and
-cheap tier; refuters on the balanced tier; adversaries, the performance
-analyst, and verifiers on the strongest.

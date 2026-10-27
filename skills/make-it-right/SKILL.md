@@ -15,6 +15,16 @@ Roles live in `roles/` next to this file. With named subagents, register and
 spawn them by name; with plain subagents, paste the role into the prompt;
 with none, perform each role yourself in order. The steps stay the same.
 
+When the harness lets you pick a model per subagent, pick one on every
+spawn, at every scope size:
+
+- **fast and cheap:** scouts, `naming`, and bulk mechanical edits such as
+  wide renames or reference sweeps;
+- **balanced:** `duplication` and `idioms-and-concurrency` proposers, and
+  applying straightforward proposals;
+- **strongest:** `structure-coupling`, synthesis, `behavior-verifier`, and
+  anything touching concurrency or a public surface.
+
 ## 1. Frame the run
 
 Decide these from the request and the repo, state them at the top of your
@@ -25,12 +35,14 @@ report, and ask only when the request is genuinely ambiguous:
   would you clean up?". `fix` edits and commits. Use it when asked to clean
   up, refactor, or make right the current working branch.
 - **Scope.** Arguments win: a PR or branch means its diff against its base,
-  paths mean those files, and `all` means the whole repository. Otherwise use
+  paths mean every file under them, changed on the branch or not, and `all`
+  means the whole repository. Otherwise use
   the current branch's diff against its merge-base with the main branch. If
   that diff is empty, say so and offer a path or `all`. Drop vendored,
   generated, and lockfile paths.
-- **Size.** For *small* scopes (about ten files or fewer), cover all four
-  dimensions yourself or with one proposer, and use one verifier. *Medium*
+- **Size.** For *small* scopes (about ten files or fewer), scout yourself,
+  spawn one `refactor-proposer` for all four dimensions, and one
+  `behavior-verifier`. *Medium*
   scopes use the full fan-out below. *Large* scopes and `all` split into
   slices (section 4).
 
@@ -42,15 +54,20 @@ failures that were already there.
 - Find the commands in the repo's agent docs (AGENTS.md, CLAUDE.md,
   CONTRIBUTING) and task-runner config. Use two tiers. The **targeted gate**
   is lint, typecheck, and the tests covering touched files and their callers,
-  run after each change. The **full gate** is the project's check command, run
+  run after each change. Find those tests by searching the whole test tree
+  for imports of each touched module; they often live outside its package. The **full gate** is the project's check command, run
   once before the first edit and once at the end. If the docs map change
   types to checks, follow that map.
 - Before the first edit, record the baseline: run the full gate and list
-  failing checks or tests by name. A red baseline is recorded, not a stop.
+  failing checks or tests by name. When the full gate stops at its first
+  failure, run its remaining parts separately so the baseline names every
+  failing check. A red baseline is recorded, not a stop.
   From then on, green means no failure outside the baseline list. If the
   gate cannot produce a signal at all (missing tool, broken install,
   collection error), or nothing runnable exists, fix mode becomes review mode
   and the report says why.
+- Gate runs can outlast a single tool call. Wait for each run to finish
+  before you continue or end your turn.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes belong to the user. Leave them exactly as
@@ -79,8 +96,10 @@ Track this checklist in your response:
    project notes.
 3. **Synthesize.** Merge and dedupe across dimensions. Reject anything that
    would change observable behavior, public API, route paths, serialized field
-   names, or test assertions. Also reject new dependencies and dedupes of code
-   that only looks alike. When proposals conflict, keep the smaller change.
+   names, or test assertions. Also reject new dependencies, dedupes of code
+   that only looks alike, and proposals with no named payoff. Put a shared
+   helper in the lower-level module, so no low-level module starts importing
+   a higher layer. When proposals conflict, keep the smaller change.
    Order the rest: renames, then dedupes, then moves and splits, so extracted
    helpers get good names. Done when every proposal is accepted or rejected
    with a reason. **Review mode ends here:** report the accepted list as
@@ -113,13 +132,5 @@ boundaries, each about the size of one reviewable PR. Rank them by
 is its own pass through section 3, with its own report and branch. Slices
 run in parallel only in separate worktrees; in a shared worktree they run
 serially. Duplication that spans slices goes into a final cross-slice pass
-once the slices land.
-
-When the harness lets you choose models, match the model to the job:
-
-- **fast and cheap:** scouts, `naming`, and bulk mechanical edits such as
-  wide renames or reference sweeps;
-- **balanced:** `duplication` and `idioms-and-concurrency` proposers, and
-  applying straightforward proposals;
-- **strongest:** `structure-coupling`, synthesis, `behavior-verifier`, and
-  anything touching concurrency or a public surface.
+once the slices land. Slices cut from one commit share one baseline:
+record it once and hand it to each slice.
