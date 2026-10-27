@@ -55,17 +55,18 @@ failures that were already there.
   CONTRIBUTING) and task-runner config. Use two tiers. The **targeted gate**
   is lint, typecheck, and the tests covering touched files and their callers,
   run after each change. Find those tests by searching the whole test tree
-  for imports of each touched module; they often live outside its package. The **full gate** is the project's check command, run
-  once before the first edit and once at the end. If the docs map change
-  types to checks, follow that map.
+  for imports of each touched module; they often live outside its package.
+  The **full gate** is the project's check command, run once before the
+  first edit and once at the end. If the docs map change types to checks,
+  follow that map.
 - Before the first edit, record the baseline: run the full gate and list
-  failing checks or tests by name. When the full gate stops at its first
-  failure, run its remaining parts separately so the baseline names every
-  failing check. A red baseline is recorded, not a stop.
-  From then on, green means no failure outside the baseline list. If the
-  gate cannot produce a signal at all (missing tool, broken install,
-  collection error), or nothing runnable exists, fix mode becomes review mode
-  and the report says why.
+  failing checks or tests by name, unless a baseline for this exact commit
+  was handed to you. When the full gate stops at its first failure, run its
+  remaining parts separately so the baseline names every failing check. A
+  red baseline is recorded, not a stop. From then on, green means no
+  failure outside the baseline list. If the gate cannot produce a signal at
+  all (missing tool, broken install, collection error), or nothing runnable
+  exists, fix mode becomes review mode and the report says why.
 - Gate runs can outlast a single tool call. Run a long gate in the
   background with its exit code written to a file, then poll for that file,
   and when a wait times out, wait again. A run is finished only when its
@@ -101,12 +102,19 @@ Track this checklist in your response:
    names, or test assertions. Also reject new dependencies, dedupes of code
    that only looks alike, and proposals with no named payoff. Put a shared
    helper in the lower-level module, so no low-level module starts importing
-   a higher layer. When proposals conflict, keep the smaller change.
+   a higher layer. A hazard fix that changes what fails, throws, or logs
+   (a swallowed error now caught, a race closed) is a behavior change: list
+   it under human judgment rather than applying it. When proposals conflict,
+   keep the smaller change unless the larger one subsumes it.
    Order the rest: renames, then dedupes, then moves and splits, so extracted
    helpers get good names. Done when every proposal is accepted or rejected
-   with a reason. **Review mode ends here:** report the accepted list as
-   findings, each with file:line, the concrete change, and its risk.
-4. **Apply** (fix mode, serially). For each accepted proposal:
+   with a reason. In fix mode, write the accepted list with its file:line
+   anchors to a scratch file outside the repository and apply from that
+   file, so the detail survives a long run. **Review mode ends here:**
+   report the accepted list as findings, each with file:line, the concrete
+   change, and its risk.
+4. **Apply** (fix mode, serially). For each accepted proposal, finishing
+   its commit before editing for the next:
    - make the edit and update every reference by search, including strings,
      docs, scripts, and dynamic dispatch the type checker cannot see;
    - run the targeted gate;
