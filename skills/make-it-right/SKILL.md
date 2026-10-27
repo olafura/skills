@@ -15,7 +15,9 @@ Roles live in `roles/` next to this file. With named subagents, register and
 spawn them by name; with plain subagents, paste the role into the prompt; with
 none, perform each role yourself in order. The steps stay the same. A step that
 spawns subagents is done only when their results are in: wait for each one in
-the foreground, since a result that lands after your turn ends is lost.
+the foreground, since a result that lands after your turn ends is lost. Where
+the spawn tool runs in the background by default, ask for foreground on every
+spawn.
 
 When the harness lets you pick a model per subagent, pick one on every
 spawn, at every scope size:
