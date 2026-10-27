@@ -83,7 +83,7 @@ failures that were already there.
 
 ## 3. The pass
 
-Track this checklist in your response:
+Track this checklist in your response, once per slice:
 
 ```
 - [ ] Scout    - [ ] Propose    - [ ] Synthesize
@@ -123,8 +123,8 @@ Track this checklist in your response:
    - make the edit and update every reference by search, including strings,
      docs, scripts, and dynamic dispatch the type checker cannot see; done
      when a search for the old name or path finds only intended hits;
-   - run the targeted gate (small proposals on disjoint files may share one
-     run, each still in its own commit);
+   - run the targeted gate on the uncommitted edit (small proposals on
+     disjoint files may share one run, each still in its own commit);
    - when it is green, commit that proposal alone (`refactor: rename X to Y`,
      `refactor: dedupe X into Y`, `refactor: extract X`,
      `refactor: move X to Y`);
