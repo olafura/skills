@@ -40,7 +40,8 @@ report, and ask only when the request is genuinely ambiguous:
   the current branch's diff against its merge-base with the main branch. If
   that diff is empty, say so and offer a path or `all`. Drop vendored,
   generated, and lockfile paths.
-- **Size.** For *small* scopes (about ten files or fewer), scout yourself,
+- **Size** counts the whole scope, not each package in it. For *small*
+  scopes (about ten files or fewer), scout yourself,
   spawn one `refactor-proposer` for all four dimensions, and one
   `behavior-verifier`. *Medium* scopes (more than that, up to one
   reviewable PR) use the full fan-out below. *Large* scopes and `all` split
@@ -60,8 +61,9 @@ failures that were already there.
   first edit and once at the end. If the docs map change types to checks,
   follow that map.
 - Before the first edit, record the baseline: run the full gate and list
-  failing checks or tests by name, unless a baseline for this exact commit
-  was handed to you. When the full gate stops at its first failure, run its
+  failing checks or tests by name, unless a baseline was handed to you for
+  this commit or for an ancestor whose later commits touch nothing the gate
+  runs. When the full gate stops at its first failure, run its
   remaining parts separately so the baseline names every failing check. A
   red baseline is recorded, not a stop. From then on, green means no
   failure outside the baseline list. If the gate cannot produce a signal at
@@ -94,8 +96,8 @@ Track this checklist in your response:
    deviates from their conventions. Done when every scoped module has its
    neighbours named, plus each duplicated helper or "none found".
 2. **Propose** (parallel, read-only). Spawn one `refactor-proposer` per
-   dimension: `naming`, `duplication`, `structure-coupling`,
-   `idioms-and-concurrency`. Give each the file list, the goal of the change
+   dimension (one for all four on a small scope): `naming`,
+   `duplication`, `structure-coupling`, `idioms-and-concurrency`. Give each the file list, the goal of the change
    (from commit messages or the PR description), the scout findings, and the
    project notes.
 3. **Synthesize.** Merge and dedupe across dimensions. Reject anything that
@@ -137,7 +139,8 @@ Track this checklist in your response:
    Done when every commit is preserved with evidence.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
-   verdicts; and what needs human judgment, such as public API changes,
+   verdicts; which roles you performed yourself instead of spawning; and
+   what needs human judgment, such as public API changes,
    cross-package moves, or unproven behavior differences. Leave pushing and
    merging to the user.
 
