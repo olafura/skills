@@ -144,7 +144,8 @@ Track this checklist in your response, once per slice:
    - when it is green, commit that proposal alone, or with others of its kind in
      the same file (`refactor: rename X to Y`, `refactor: dedupe X into Y`,
      `refactor: extract X`, `refactor: move X to Y`);
-   - when it is red, find which part failed (lint, types, or a test) before
+   - when it is red, find each part that failed (lint, types, or a test) by
+     reading the log from the top, since a tail shows only the last, before
      reading test counts. Finish the change it points at (a line the rename
      pushed past the length limit, a stale patch-target string), or restore this
      proposal's files to `HEAD` and retry a smaller version once, or skip it and
