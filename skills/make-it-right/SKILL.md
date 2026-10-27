@@ -78,11 +78,12 @@ failures that were already there.
   nothing runnable exists, fix mode becomes review mode and the report says why.
 - Gate runs can outlast a single tool call. Run a long gate in the background,
   in its own session (`setsid`) so a harness timeout cannot kill it, with its
-  exit code written to a file, then poll for that file, and when a wait times
-  out, wait again. Delete the file before each launch, so the poll never reads
-  an earlier run's code. A run is finished only when its exit code exists (a
-  notice that the background shell exited is not that); continue or end your
-  turn only after that.
+  exit code and process ID written to files (stop it by that ID, since a pattern
+  kill can match your own shell), then poll for the exit-code file, and when a
+  wait times out, wait again. Delete the file before each launch, so the poll
+  never reads an earlier run's code. A run is finished only when its exit code
+  exists (a notice that the background shell exited is not that); continue or
+  end your turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes (what `git status` shows) belong to the
@@ -144,16 +145,17 @@ Track this checklist in your response, once per slice:
      proposal's files to `HEAD` and retry a smaller version once, or skip it and
      record why.
 5. **Verify** (fix mode). Run the full gate against the baseline. Then spawn
-   `behavior-verifier` on `<start>..HEAD` (two independent verifiers for
-   medium and large scopes). On a **changed** verdict, fix or revert that
-   commit and verify again. On a **suspect** verdict, resolve it to preserved
-   with evidence, fix it, or revert it; revert when no measurement can
-   settle it, such as a race under load. When verifiers disagree, measure
-   the disputed fact (run it, build it, diff the output) rather than pick a
-   side. A **preserved** verdict that names a defect in the refactor itself
-   (code it left orphaned, a comment it made false) still gets a fix commit
-   or a recorded reason. After any fix or revert, rerun the full gate.
-   Done when every commit is preserved with evidence.
+   `behavior-verifier` on `<start>..HEAD` (two independent verifiers for medium
+   and large scopes). On a **changed** verdict, fix or revert that commit and
+   verify again. On a **suspect** verdict, resolve it to preserved with
+   evidence, fix it, or revert it; revert when no measurement can settle it,
+   such as a race under load. When verifiers disagree, measure the disputed fact
+   (run it, build it, diff the output) rather than pick a side. A **preserved**
+   verdict that names a defect in the refactor itself (code it left orphaned, a
+   comment it made false) still gets a fix commit or a recorded reason. After
+   any fix or revert, rerun the full gate. Done when every commit in
+   `<start>..HEAD` is preserved with evidence, including commits made after the
+   verifiers ran.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
    verdicts; which roles you performed yourself instead of spawning; and
