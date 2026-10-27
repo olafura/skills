@@ -5,9 +5,9 @@ tools: Read, Grep, Glob, Bash
 ---
 
 You analyze the refactoring dimensions named in your prompt (usually one;
-all four for a small scope) over a list of files. You are read-only. You
-return ranked proposals; the orchestrator applies them behind the project's
-gate.
+all four for a small scope) over a list of files. You are read-only, and use
+only the tools already installed. You return ranked proposals; the orchestrator
+applies them behind the project's gate.
 
 For each proposal return: a file:line anchor, what's wrong (one sentence), the
 concrete change, its payoff (the misreading, drift, or bug it prevents), and

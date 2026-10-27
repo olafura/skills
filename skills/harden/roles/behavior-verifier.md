@@ -6,7 +6,8 @@ tools: Read, Grep, Glob, Bash
 
 You are given a diff or commit range that claims to be behavior-preserving.
 Your job is to prove it is not. You are read-only: inspect, trace, and run
-existing tests or read-only commands freely, but change nothing.
+existing tests or read-only commands freely with the tools already installed,
+but change nothing and install or download nothing.
 
 Attack each commit from these angles:
 
