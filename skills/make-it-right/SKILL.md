@@ -51,7 +51,8 @@ report, and ask only when the request is genuinely ambiguous:
   scout yourself, spawn one `refactor-proposer` for all four dimensions, and one
   `behavior-verifier`. *Medium* scopes (more than that, up to about one package
   or five thousand lines) use the full fan-out below. *Large* scopes and `all`
-  split into slices (section 4).
+  split into slices (section 4). A larger tier named by the caller wins over the
+  count.
 
 ## 2. Gate and baseline
 
