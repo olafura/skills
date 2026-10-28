@@ -28,9 +28,11 @@ spawn, at every scope size:
   applying straightforward proposals;
 - **strongest:** `structure-coupling`, synthesis, `behavior-verifier`, and any
   edit or verification touching concurrency or a public surface (an exported
-  name, a route, a schema, or a wire format; a private helper beside one is
-  not), whatever the dimension. When you run on a weaker model, spawn synthesis
-  on the strongest one, handing it every proposal and the project notes.
+  name, a route, a schema, or a wire format; a private helper beside one is not,
+  nor is a name an import brings into a module unless callers import it from
+  there), whatever the dimension. When you run on a weaker model, spawn
+  synthesis on the strongest one, handing it every proposal and the project
+  notes.
 
 ## 1. Frame the run
 
@@ -69,9 +71,12 @@ failures that were already there.
   targets, plus any proof or spec tree the project notes say cites code by name;
   they often live outside its package. When that is most of the suite, take the
   direct importers, the module's own suites, and any static guards, and widen to
-  the callers of every helper you add in another module. The **full gate** is
-  the project's check command, run once before the first edit and once at the
-  end. If the docs map change types to checks, follow that map.
+  the callers of every helper you add in another module. A test path that
+  collects nothing is not green; fix the path. When no test reaches a touched
+  line, add a seeded differential that runs the code as the pass found it and at
+  HEAD on the same inputs, and check that it reaches every changed line. The
+  **full gate** is the project's check command, run once before the first edit
+  and once at the end. If the docs map change types to checks, follow that map.
 - Before the first edit, record the baseline: run the full gate and list failing
   checks or tests by name, unless a baseline was handed to you for this commit
   or for an ancestor whose later commits touch nothing the gate runs. An
@@ -92,7 +97,7 @@ failures that were already there.
   recorded ID and delete its exit-code file, so the poll never reads an earlier
   run's code. A run is finished only when its exit code exists (a notice that
   the background shell exited is not that); continue or end your turn only after
-  that.
+  that, however long the run queues or runs.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes (what `git status` shows) belong to the user.
