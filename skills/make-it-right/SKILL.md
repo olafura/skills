@@ -158,7 +158,9 @@ stays unticked, and the report says why.
      pushed past the length limit, a stale patch-target string), or restore this
      proposal's files to `HEAD` and retry a smaller version once, or skip it and
      record why.
-5. **Verify** (fix mode). Run the full gate against the baseline. Then spawn
+5. **Verify** (fix mode). Run the full gate against the baseline. A failure
+   there in code your commits cannot reach that passes when rerun is a flake:
+   report it with both runs rather than fix or revert for it. Then spawn
    `behavior-verifier` on `<start>..HEAD` (two independent verifiers for medium
    and large scopes). On a **changed** verdict, fix or revert that commit and
    verify again. On a **suspect** verdict, resolve it to preserved with
