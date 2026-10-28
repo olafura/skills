@@ -128,22 +128,24 @@ unticked, and the report says why.
    Reject anything that would change observable behavior, public API, route
    paths, serialized field names, test expectations (a test's patch targets,
    imports, and the names it calls follow the code they name, even into another
-   module; what an assertion expects stays), or what loads when (a module newly
-   loaded at startup, a bundle chunk split or merged), or how long a resource
-   lives (a client, pool, or lock now kept, shared, or closed elsewhere). Also
-   reject new dependencies, dedupes of code that only looks alike, and proposals
-   with no named payoff. Put a shared helper in the lower-level module, so no
-   low-level module starts importing a higher layer, and in one whose own
-   imports its callers already load. A hazard fix that changes what fails,
-   throws, or logs (a swallowed error now caught, a race closed) is a behavior
-   change: list it under human judgment rather than applying it. When proposals
-   conflict, keep the smaller change unless the larger one subsumes it. Order
-   the rest: renames, then dedupes, then moves and splits, so extracted helpers
-   get good names. Done when every proposal is accepted or rejected with a
-   reason. In fix mode, write the accepted list with its file:line anchors to a
-   scratch file outside the repository and apply from that file, so the detail
-   survives a long run. **Review mode ends here:** report the accepted list as
-   findings, each with file:line, the concrete change, and its risk.
+   module; what an assertion expects stays), or what loads or runs when (a
+   module newly loaded at startup, a bundle chunk split or merged, an argument
+   now evaluated when a partial or closure is built rather than when it is
+   called), or how long a resource lives (a client, pool, or lock now kept,
+   shared, or closed elsewhere). Also reject new dependencies, dedupes of code
+   that only looks alike, and proposals with no named payoff. Put a shared
+   helper in the lower-level module, so no low-level module starts importing a
+   higher layer, and in one whose own imports its callers already load. A hazard
+   fix that changes what fails, throws, or logs (a swallowed error now caught, a
+   race closed) is a behavior change: list it under human judgment rather than
+   applying it. When proposals conflict, keep the smaller change unless the
+   larger one subsumes it. Order the rest: renames, then dedupes, then moves and
+   splits, so extracted helpers get good names. Done when every proposal is
+   accepted or rejected with a reason. In fix mode, write the accepted list with
+   its file:line anchors to a scratch file outside the repository and apply from
+   that file, so the detail survives a long run. **Review mode ends here:**
+   report the accepted list as findings, each with file:line, the concrete
+   change, and its risk.
 4. **Apply** (fix mode, serially). Edit yourself or through one subagent at a
    time; the commits stay yours. For each accepted proposal, finishing its
    commit before editing for the next:
@@ -164,19 +166,19 @@ unticked, and the report says why.
      record why.
 5. **Verify** (fix mode). Run the full gate against the baseline. A failure
    there in code your commits cannot reach that passes when rerun is a flake:
-   report it with both runs rather than fix or revert for it. Then spawn
-   `behavior-verifier` on `<start>..HEAD` (two independent verifiers for medium
-   and large scopes). On a **changed** verdict, fix or revert that commit and
-   verify again. On a **suspect** verdict, resolve it to preserved with evidence
-   (a measurement, or a reading of every producer showing no real input reaches
-   the difference), fix it, or revert it; revert when neither can settle it,
-   such as a race under load. When verifiers disagree, measure the disputed fact
-   (run it, build it, diff the output) rather than pick a side. A **preserved**
-   verdict that names a defect in the refactor itself (code it left orphaned, a
-   comment it made false) still gets a fix commit or a recorded reason. After
-   any fix or revert, rerun the full gate. Done when every commit in
-   `<start>..HEAD` is preserved with evidence, including commits made after the
-   verifiers ran.
+   report it with both runs rather than fix or revert for it. Then, or while it
+   runs, spawn `behavior-verifier` on `<start>..HEAD` (two independent verifiers
+   for medium and large scopes). On a **changed** verdict, fix or revert that
+   commit and verify again. On a **suspect** verdict, resolve it to preserved
+   with evidence (a measurement, or a reading of every producer showing no real
+   input reaches the difference), fix it, or revert it; revert when neither can
+   settle it, such as a race under load. When verifiers disagree, measure the
+   disputed fact (run it, build it, diff the output) rather than pick a side. A
+   **preserved** verdict that names a defect in the refactor itself (code it
+   left orphaned, a comment it made false) still gets a fix commit or a recorded
+   reason. After any fix or revert, rerun the full gate. Done when every commit
+   in `<start>..HEAD` is preserved with evidence, including commits made after
+   the verifiers ran.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
    verdicts; which roles you performed yourself instead of spawning; and
