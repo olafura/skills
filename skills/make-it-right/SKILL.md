@@ -151,8 +151,9 @@ stays unticked, and the report says why.
      when a search for the old name or path finds only intended hits;
    - run the targeted gate on the uncommitted edit (small proposals on
      disjoint files may share one run, each still in its own commit);
-   - when it is green, commit that proposal alone, or with others of its kind in
-     the same file (`refactor: rename X to Y`, `refactor: dedupe X into Y`,
+   - when its exit code says green (read it before running the commit, not in
+     the same command), commit that proposal alone, or with others of its kind
+     in the same file (`refactor: rename X to Y`, `refactor: dedupe X into Y`,
      `refactor: extract X`, `refactor: move X to Y`);
    - when it is red, find each part that failed (lint, types, or a test) by
      reading the log from the top, since a tail shows only the last, before
