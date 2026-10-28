@@ -64,7 +64,9 @@ It need not clear unrelated ones.
   end your turn only after that.
 - Pre-existing uncommitted changes belong to the user. Leave them exactly as
   they are; prefer a separate worktree or branch, otherwise skip fixes that
-  touch dirty files and stage your own edits by path.
+  touch dirty files and stage your own edits by path. Edits left uncommitted by
+  an interrupted earlier run of this same pass are yours: finish them through
+  the targeted gate or restore their files to `HEAD`.
 
 ## 3. The pass
 

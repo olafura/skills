@@ -56,7 +56,9 @@ only when its exit code exists (a notice that the background shell exited is not
 that); continue or end your turn only after that. If the gate cannot produce a
 signal at all, fix mode becomes report mode and the report says why.
 Pre-existing uncommitted changes belong to the user; leave them exactly as they
-are and skip items that touch dirty files.
+are and skip items that touch dirty files. Edits left uncommitted by an
+interrupted earlier run of this same pass are yours: finish them through the
+targeted gate or restore their files to `HEAD`.
 
 ## 3. The pass
 

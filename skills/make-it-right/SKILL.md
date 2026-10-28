@@ -90,10 +90,12 @@ failures that were already there.
   turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
-- Pre-existing uncommitted changes (what `git status` shows) belong to the
-  user. Leave them exactly as they are. Prefer a separate worktree or branch
-  for the pass. Otherwise, skip proposals that touch dirty files and list them
-  in the report, and stage your own edits by path.
+- Pre-existing uncommitted changes (what `git status` shows) belong to the user.
+  Leave them exactly as they are. Prefer a separate worktree or branch for the
+  pass. Otherwise, skip proposals that touch dirty files and list them in the
+  report, and stage your own edits by path. Edits left uncommitted by an
+  interrupted earlier run of this same pass are yours: finish them through the
+  targeted gate or restore their files to `HEAD`.
 
 ## 3. The pass
 

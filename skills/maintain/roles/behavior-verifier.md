@@ -43,6 +43,8 @@ with the strongest evidence you found: file:line, before and after, and the
 difference a caller or downstream system would observe. Preserved needs positive
 evidence. When reading cannot rule a difference out, measure before you settle:
 run the old and new code on the same inputs from a scratch script outside the
-repository and compare. The verdict is suspect only when neither settles it;
-then name the measurement that would. Passing tests are not proof; say what they
-do not cover. Finish with a one-line overall verdict.
+repository and compare their serialized output, key order kept, and their inputs
+afterward: `==` ignores order, and a copied input hides mutation. The verdict is
+suspect only when neither settles it; then name the measurement that would.
+Passing tests are not proof; say what they do not cover. Finish with a one-line
+overall verdict.
