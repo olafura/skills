@@ -141,19 +141,20 @@ run short or skipped stays unticked, and the report says why.
    module; what an assertion expects stays), or what loads or runs when (a
    module newly loaded at startup, a bundle chunk split or merged, an argument
    now evaluated when a partial or closure is built rather than when it is
-   called), or how long a resource lives (a client, pool, or lock now kept,
-   shared, or closed elsewhere). Also reject new dependencies, dedupes of code
-   that only looks alike, and proposals with no named payoff. Put a shared
-   helper in the lower-level module, so no low-level module starts importing a
-   higher layer, and in one whose own imports its callers already load. A hazard
-   fix that changes what fails, throws, or logs (a swallowed error now caught, a
-   race closed), or that moves work onto a thread or a shared limiter, is a
-   behavior change: list it under human judgment rather than applying it. When
-   proposals conflict, keep the smaller change unless the larger one subsumes
-   it. Order the rest: renames, then dedupes, then moves and splits, so
-   extracted helpers get good names. Done when every proposal is accepted or
-   rejected with a reason. In fix mode, write the accepted list with its
-   file:line anchors to a scratch file outside the repository and apply from
+   called, an `await` or async helper added on a path concurrent callers share,
+   which reorders them), or how long a resource lives (a client, pool, or lock
+   now kept, shared, or closed elsewhere). Also reject new dependencies, dedupes
+   of code that only looks alike, and proposals with no named payoff. Put a
+   shared helper in the lower-level module, so no low-level module starts
+   importing a higher layer, and in one whose own imports its callers already
+   load. A hazard fix that changes what fails, throws, or logs (a swallowed
+   error now caught, a race closed), or that moves work onto a thread or a
+   shared limiter, is a behavior change: list it under human judgment rather
+   than applying it. When proposals conflict, keep the smaller change unless the
+   larger one subsumes it. Order the rest: renames, then dedupes, then moves and
+   splits, so extracted helpers get good names. Done when every proposal is
+   accepted or rejected with a reason. In fix mode, write the accepted list with
+   its file:line anchors to a scratch file outside the repository and apply from
    that file, so the detail survives a long run. **Review mode ends here:**
    report the accepted list as findings, each with file:line, the concrete
    change, and its risk.
