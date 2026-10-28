@@ -83,10 +83,11 @@ failures that were already there.
   in its own session (`setsid`) so a harness timeout cannot kill it, with its
   exit code and process ID written to files (stop it by that ID, since a pattern
   kill can match your own shell), then poll for the exit-code file, and when a
-  wait times out, wait again. Delete the file before each launch, so the poll
-  never reads an earlier run's code. A run is finished only when its exit code
-  exists (a notice that the background shell exited is not that); continue or
-  end your turn only after that.
+  wait times out, wait again. Before each launch, stop any earlier run still
+  alive by its recorded ID and delete its exit-code file, so the poll never
+  reads an earlier run's code. A run is finished only when its exit code exists
+  (a notice that the background shell exited is not that); continue or end your
+  turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes (what `git status` shows) belong to the
