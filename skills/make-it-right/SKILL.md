@@ -81,16 +81,17 @@ failures that were already there.
   on, green means no failure outside the baseline list. If the gate cannot
   produce a signal at all (missing tool, broken install, collection error), or
   nothing runnable exists, fix mode becomes review mode and the report says why.
-- Gate runs can outlast a single tool call. Run a long gate in the background,
-  in its own session (`setsid`) so a harness timeout cannot kill it, with its
-  exit code and process ID written to files by the run itself (a launcher's ID
-  can belong to a parent that has already exited; stop the run by its own ID,
-  since a pattern kill can match your own shell), then poll for the exit-code
-  file, and when a wait times out, wait again. Before each launch, stop any
-  earlier run still alive by its recorded ID and delete its exit-code file, so
-  the poll never reads an earlier run's code. A run is finished only when its
-  exit code exists (a notice that the background shell exited is not that);
-  continue or end your turn only after that.
+- Gate runs, and other long checks such as proof suites, can outlast a single
+  tool call. Run a long one in the background, in its own session (`setsid`) so
+  a harness timeout cannot kill it, with its exit code and process ID written to
+  files by the run itself (a launcher's ID can belong to a parent that has
+  already exited; stop the run by its own ID, since a pattern kill can match
+  your own shell), then poll for the exit-code file, and when a wait times out,
+  wait again. Before each launch, stop any earlier run still alive by its
+  recorded ID and delete its exit-code file, so the poll never reads an earlier
+  run's code. A run is finished only when its exit code exists (a notice that
+  the background shell exited is not that); continue or end your turn only after
+  that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes (what `git status` shows) belong to the user.
