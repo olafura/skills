@@ -27,9 +27,10 @@ spawn, at every scope size:
 - **balanced:** `duplication` and `idioms-and-concurrency` proposers, and
   applying straightforward proposals;
 - **strongest:** `structure-coupling`, synthesis, `behavior-verifier`, and any
-  edit or verification touching concurrency or a public surface, whatever the
-  dimension. When you run on a weaker model, spawn synthesis on the strongest
-  one, handing it every proposal and the project notes.
+  edit or verification touching concurrency or a public surface (an exported
+  name, a route, a schema, or a wire format; a private helper beside one is
+  not), whatever the dimension. When you run on a weaker model, spawn synthesis
+  on the strongest one, handing it every proposal and the project notes.
 
 ## 1. Frame the run
 
@@ -172,18 +173,20 @@ unticked, and the report says why.
 5. **Verify** (fix mode). Run the full gate against the baseline. A failure
    there in code your commits cannot reach that passes when rerun is a flake:
    report it with both runs rather than fix or revert for it. Then, or while it
-   runs, spawn `behavior-verifier` on `<start>..HEAD` with the project notes
-   (two independent verifiers for medium and large scopes). On a **changed**
-   verdict, fix or revert that commit and verify again. On a **suspect**
-   verdict, resolve it to preserved with evidence (a measurement, or a reading
-   of every producer showing no real input reaches the difference), fix it, or
-   revert it; revert when neither can settle it, such as a race under load. When
-   verifiers disagree, measure the disputed fact (run it, build it, diff the
-   output) rather than pick a side. A **preserved** verdict that names a defect
-   in the refactor itself (code it left orphaned, a comment it made false) still
-   gets a fix commit or a recorded reason. After any fix or revert, rerun the
-   full gate. Done when every commit in `<start>..HEAD` is preserved with
-   evidence, including commits made after the verifiers ran.
+   runs, spawn `behavior-verifier` on `<start>..HEAD` (`<start>` is the commit
+   the pass began from) with the project notes (two independent verifiers for
+   medium and large scopes). On a **changed** verdict, fix or revert that commit
+   and verify again. On a **suspect** verdict, or a preserved one with a caveat
+   about inputs that reach a difference, resolve it to preserved with evidence
+   (a measurement, or a reading of every producer showing no real input reaches
+   the difference), fix it, or revert it; revert when neither can settle it,
+   such as a race under load. When verifiers disagree, measure the disputed fact
+   (run it, build it, diff the output) rather than pick a side. A **preserved**
+   verdict that names a defect in the refactor itself (code it left orphaned, a
+   comment it made false) still gets a fix commit or a recorded reason. After
+   any fix or revert, rerun the full gate. Done when every commit in
+   `<start>..HEAD` is preserved with evidence, including commits made after the
+   verifiers ran.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
    verdicts; which roles you performed yourself instead of spawning; and
