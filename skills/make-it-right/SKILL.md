@@ -116,10 +116,10 @@ Track this checklist in your response, once per slice:
 - [ ] Apply (fix)    - [ ] Verify (fix)    - [ ] Report
 ```
 
-Tick a step when its size tier's count has run: on a small slice, your own
-scouting, one proposer, and one verifier; on a medium or large slice, two
-scouts, four proposers, and two verifiers. A step run short or skipped stays
-unticked, and the report says why.
+Tick a step when its size tier's count has run, in parallel or one after
+another: on a small slice, your own scouting, one proposer, and one verifier; on
+a medium or large slice, two scouts, four proposers, and two verifiers. A step
+run short or skipped stays unticked, and the report says why.
 
 1. **Scout** (parallel, read-only; any read-only search agent will do). One
    subagent hunts existing helpers, utilities, and types that the scoped code
@@ -185,18 +185,20 @@ unticked, and the report says why.
    `<start>..HEAD` (`<start>` is the commit the pass began from) with the
    project notes (two independent verifiers for medium and large scopes). On a
    **changed** verdict, fix or revert that commit and verify again; a difference
-   that needs an input the types exclude is suspect instead. On a **suspect**
-   verdict, or a preserved one with a caveat about inputs that reach a
-   difference, resolve it to preserved with evidence (a measurement, or a
-   reading of every producer showing no real input reaches the difference), fix
-   it, or revert it; revert when neither can settle it, such as a race under
-   load. When verifiers disagree, measure the disputed fact (run it, build it,
-   diff the output, or read every producer when the dispute is whether real
-   input reaches it) rather than pick a side. A **preserved** verdict that names
-   a defect in the refactor itself (code it left orphaned, a comment it made
-   false) still gets a fix commit or a recorded reason. After any fix or revert,
-   rerun the full gate. Done when every commit in `<start>..HEAD` is preserved
-   with evidence, including commits made after the verifiers ran.
+   that needs an input the types exclude is suspect instead, and so is one seen
+   only in an uncaught traceback (a lost exception chain) when no code or log
+   reads it. On a **suspect** verdict, or a preserved one with a caveat about
+   inputs that reach a difference, resolve it to preserved with evidence (a
+   measurement, or a reading of every producer showing no real input reaches the
+   difference), fix it, or revert it; revert when neither can settle it, such as
+   a race under load. When verifiers disagree, measure the disputed fact (run
+   it, build it, diff the output, or read every producer when the dispute is
+   whether real input reaches it) rather than pick a side. A **preserved**
+   verdict that names a defect in the refactor itself (code it left orphaned, a
+   comment it made false) still gets a fix commit or a recorded reason. After
+   any fix or revert, rerun the full gate. Done when every commit in
+   `<start>..HEAD` is preserved with evidence, including commits made after the
+   verifiers ran.
 6. **Report.** Include the mode, scope, and baseline; commits (hash and
    subject) or findings; proposals rejected or skipped and why; verifier
    verdicts; which roles you performed yourself instead of spawning; and
