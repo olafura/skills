@@ -153,8 +153,9 @@ unticked, and the report says why.
    time; the commits stay yours. For each accepted proposal, finishing its
    commit before editing for the next:
    - make the edit and update every reference by search, including strings,
-     docs, scripts, and dynamic dispatch the type checker cannot see; done
-     when a search for the old name or path finds only intended hits;
+     docs, scripts, guard tests' allowlists, and dynamic dispatch the type
+     checker cannot see; done when a search for the old name or path finds
+     only intended hits;
    - check that `git diff` shows the edit you meant, then run the targeted
      gate on the uncommitted edit (small proposals on disjoint files may share
      one run, each still in its own commit);
