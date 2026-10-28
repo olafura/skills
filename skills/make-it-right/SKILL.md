@@ -28,7 +28,8 @@ spawn, at every scope size:
   applying straightforward proposals;
 - **strongest:** `structure-coupling`, synthesis, `behavior-verifier`, and any
   edit or verification touching concurrency or a public surface, whatever the
-  dimension.
+  dimension. When you run on a weaker model, spawn synthesis on the strongest
+  one, handing it every proposal and the project notes.
 
 ## 1. Frame the run
 
@@ -81,13 +82,14 @@ failures that were already there.
   nothing runnable exists, fix mode becomes review mode and the report says why.
 - Gate runs can outlast a single tool call. Run a long gate in the background,
   in its own session (`setsid`) so a harness timeout cannot kill it, with its
-  exit code and process ID written to files (stop it by that ID, since a pattern
-  kill can match your own shell), then poll for the exit-code file, and when a
-  wait times out, wait again. Before each launch, stop any earlier run still
-  alive by its recorded ID and delete its exit-code file, so the poll never
-  reads an earlier run's code. A run is finished only when its exit code exists
-  (a notice that the background shell exited is not that); continue or end your
-  turn only after that.
+  exit code and process ID written to files by the run itself (a launcher's ID
+  can belong to a parent that has already exited; stop the run by its own ID,
+  since a pattern kill can match your own shell), then poll for the exit-code
+  file, and when a wait times out, wait again. Before each launch, stop any
+  earlier run still alive by its recorded ID and delete its exit-code file, so
+  the poll never reads an earlier run's code. A run is finished only when its
+  exit code exists (a notice that the background shell exited is not that);
+  continue or end your turn only after that.
 - Review mode needs no baseline. Run targeted tests only when a finding
   depends on runtime behavior.
 - Pre-existing uncommitted changes (what `git status` shows) belong to the user.
@@ -137,12 +139,13 @@ unticked, and the report says why.
    helper in the lower-level module, so no low-level module starts importing a
    higher layer, and in one whose own imports its callers already load. A hazard
    fix that changes what fails, throws, or logs (a swallowed error now caught, a
-   race closed) is a behavior change: list it under human judgment rather than
-   applying it. When proposals conflict, keep the smaller change unless the
-   larger one subsumes it. Order the rest: renames, then dedupes, then moves and
-   splits, so extracted helpers get good names. Done when every proposal is
-   accepted or rejected with a reason. In fix mode, write the accepted list with
-   its file:line anchors to a scratch file outside the repository and apply from
+   race closed), or that moves work onto a thread or a shared limiter, is a
+   behavior change: list it under human judgment rather than applying it. When
+   proposals conflict, keep the smaller change unless the larger one subsumes
+   it. Order the rest: renames, then dedupes, then moves and splits, so
+   extracted helpers get good names. Done when every proposal is accepted or
+   rejected with a reason. In fix mode, write the accepted list with its
+   file:line anchors to a scratch file outside the repository and apply from
    that file, so the detail survives a long run. **Review mode ends here:**
    report the accepted list as findings, each with file:line, the concrete
    change, and its risk.

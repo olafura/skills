@@ -48,10 +48,12 @@ the gate stops at its first failure, run its remaining parts separately so the
 baseline names every failing check. A red baseline is recorded, not a stop:
 fixing it may itself be a work item. Gate runs can outlast a single tool call:
 run a long one in the background, in its own session (`setsid`) so a harness
-timeout cannot kill it, with its exit code and process ID written to files (stop
-it by that ID, since a pattern kill can match your own shell), then poll for the
-exit-code file, and when a wait times out, wait again. Delete the file before
-each launch, so the poll never reads an earlier run's code. A run is finished
+timeout cannot kill it, with its exit code and process ID written to files by
+the run itself (a launcher's ID can belong to a parent that has already exited;
+stop the run by its own ID, since a pattern kill can match your own shell), then
+poll for the exit-code file, and when a wait times out, wait again. Before each
+launch, stop any earlier run still alive by its recorded ID and delete its
+exit-code file, so the poll never reads an earlier run's code. A run is finished
 only when its exit code exists (a notice that the background shell exited is not
 that); continue or end your turn only after that. If the gate cannot produce a
 signal at all, fix mode becomes report mode and the report says why.
