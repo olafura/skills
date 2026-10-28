@@ -41,10 +41,10 @@ report, and ask only when the request is genuinely ambiguous:
   up, refactor, or make right the current working branch.
 - **Scope.** Arguments win: a PR or branch means its diff against its base,
   paths mean every file under them, changed on the branch or not, and `all`
-  means the whole repository. Otherwise use
-  the current branch's diff against its merge-base with the main branch. If
-  that diff is empty, say so and offer a path or `all`. Drop vendored,
-  generated, and lockfile paths.
+  means the whole repository. Otherwise use the current branch's diff against
+  its merge-base with the main branch. If that diff is empty, say so and offer a
+  path or `all`. Drop vendored, generated, and lockfile paths, and any the
+  project notes exclude, even inside a named path.
 - **Size** counts the whole scope, not each package in it; a slice of a large
   scope (section 4) is sized on its own files. For *small* scopes (about ten
   files and two thousand lines at most; past either limit the scope is medium),
@@ -106,9 +106,10 @@ Track this checklist in your response, once per slice:
 - [ ] Apply (fix)    - [ ] Verify (fix)    - [ ] Report
 ```
 
-Tick a step when its size tier's count has run: on a medium or large slice,
-two scouts, four proposers, and two verifiers. A step run short or skipped
-stays unticked, and the report says why.
+Tick a step when its size tier's count has run: on a small slice, your own
+scouting, one proposer, and one verifier; on a medium or large slice, two
+scouts, four proposers, and two verifiers. A step run short or skipped stays
+unticked, and the report says why.
 
 1. **Scout** (parallel, read-only; any read-only search agent will do). One
    subagent hunts existing helpers, utilities, and types that the scoped code
